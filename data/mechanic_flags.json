@@ -1,0 +1,20 @@
+{
+  "_comment": "Additive mechanic overlay for vgc_model_v7. Extends vgc_sim.py's M without editing it.",
+  "trapper":      ["gengar"],
+  "ghost_escape": ["gengar","sinistcha","basculegion","gholdengo","annihilape","ceruledge","runerigus","chandelure","typhlosion-h","houndstone"],
+  "encore":       ["whimsicott","sableye","maushold","klefki"],
+  "taunt":        ["whimsicott","tsareena","grimmsnarl","klefki"],
+  "redirect":     ["sinistcha","maushold","amoonguss","raichu","eelektross"],
+  "priority_block":["farigiraf","tsareena"],
+  "magic_bounce": ["sableye","hatterene","glimmora"],
+  "intimidate":   ["incineroar","staraptor","mawile","arbok","manectric"],
+  "punish_intim": ["kingambit","milotic","empoleon","staraptor"],
+  "dark":         ["kingambit","grimmsnarl","hydreigon","sableye","incineroar","meowscarada","tyranitar","greninja","malamar","sharpedo"],
+  "fake_out":     ["incineroar","meowscarada","kangaskhan","lopunny","raichu","sneasler"],
+  "priority_atk": ["kingambit","meowscarada","talonflame","scizor","mawile","dragonite"],
+  "trick_room":   ["farigiraf","sinistcha","torkoal","mawile","hatterene","slowbro","runerigus","armarouge","crabominable","slowking-g","gardevoir","malamar"],
+  "tailwind":     ["whimsicott","talonflame","aerodactyl","noivern","vivillon","tornadus"],
+  "weather":      ["pelipper","politoed","charizard","torkoal","tyranitar","abomasnow","vanilluxe","ninetales-a"],
+  "setup":        ["blaziken","volcarona","annihilape","ceruledge","scolipede","malamar","dragonite","kingambit"],
+  "sleep":        ["venusaur","vivillon","vileplume","gengar"]
+}

@@ -1,0 +1,648 @@
+{
+  "format": "[Gen 9 Champions] VGC 2026 Reg M-B",
+  "player": "willhoop",
+  "count": 64,
+  "generated": "2026-07-20",
+  "games": [
+    {
+      "id": "2651905949",
+      "date": "2026-07-20 04:24",
+      "opponent": "sprezzatura_ck",
+      "opp_rating": 1245,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651905949",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651905949.log",
+      "fetched": true
+    },
+    {
+      "id": "2651876607",
+      "date": "2026-07-20 02:50",
+      "opponent": "SekonxTwo",
+      "opp_rating": 1269,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651876607",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651876607.log",
+      "fetched": false
+    },
+    {
+      "id": "2651500798",
+      "date": "2026-07-19 08:07",
+      "opponent": "Arzarane",
+      "opp_rating": 1117,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651500798",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651500798.log",
+      "fetched": false
+    },
+    {
+      "id": "2651500012",
+      "date": "2026-07-19 08:01",
+      "opponent": "ceonshellis",
+      "opp_rating": 1116,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651500012",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651500012.log",
+      "fetched": false
+    },
+    {
+      "id": "2651499234",
+      "date": "2026-07-19 07:57",
+      "opponent": "pcrlbot03bef95e87",
+      "opp_rating": 1058,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651499234",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651499234.log",
+      "fetched": false
+    },
+    {
+      "id": "2651498374",
+      "date": "2026-07-19 07:54",
+      "opponent": "theghostking111",
+      "opp_rating": 1141,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651498374",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651498374.log",
+      "fetched": false
+    },
+    {
+      "id": "2651476920",
+      "date": "2026-07-19 06:19",
+      "opponent": "Natsitimer52906",
+      "opp_rating": 1138,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651476920",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651476920.log",
+      "fetched": false
+    },
+    {
+      "id": "2651474888",
+      "date": "2026-07-19 06:17",
+      "opponent": "ClumbsyLilBeach",
+      "opp_rating": 1134,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651474888",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651474888.log",
+      "fetched": false
+    },
+    {
+      "id": "2651475536",
+      "date": "2026-07-19 06:16",
+      "opponent": "5ammy3",
+      "opp_rating": 1057,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651475536",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651475536.log",
+      "fetched": false
+    },
+    {
+      "id": "2651369036",
+      "date": "2026-07-19 00:37",
+      "opponent": "joo.piter",
+      "opp_rating": 1160,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651369036",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651369036.log",
+      "fetched": false
+    },
+    {
+      "id": "2651367019",
+      "date": "2026-07-19 00:30",
+      "opponent": "Markusdagoat",
+      "opp_rating": 1085,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651367019",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651367019.log",
+      "fetched": false
+    },
+    {
+      "id": "2651365895",
+      "date": "2026-07-19 00:27",
+      "opponent": "KNRayquaza",
+      "opp_rating": 1168,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651365895",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651365895.log",
+      "fetched": false
+    },
+    {
+      "id": "2651363338",
+      "date": "2026-07-19 00:19",
+      "opponent": "jjfyuyfuj",
+      "opp_rating": 1114,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651363338",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651363338.log",
+      "fetched": true
+    },
+    {
+      "id": "2651359725",
+      "date": "2026-07-19 00:10",
+      "opponent": "Prohxy",
+      "opp_rating": 1129,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651359725",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651359725.log",
+      "fetched": true
+    },
+    {
+      "id": "2651358547",
+      "date": "2026-07-19 00:05",
+      "opponent": "yutuyttyuytyu",
+      "opp_rating": 1025,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651358547",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651358547.log",
+      "fetched": true
+    },
+    {
+      "id": "2651320717",
+      "date": "2026-07-18 22:17",
+      "opponent": "Ori1",
+      "opp_rating": 1129,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651320717",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2651320717.log",
+      "fetched": false
+    },
+    {
+      "id": "2650522055",
+      "date": "2026-07-17 08:15",
+      "opponent": "NilouVGC",
+      "opp_rating": 1074,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2650522055",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2650522055.log",
+      "fetched": false
+    },
+    {
+      "id": "2649944650",
+      "date": "2026-07-16 04:48",
+      "opponent": "loapoMax",
+      "opp_rating": 1104,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649944650",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649944650.log",
+      "fetched": false
+    },
+    {
+      "id": "2649939385",
+      "date": "2026-07-16 04:33",
+      "opponent": "red1706",
+      "opp_rating": 1168,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649939385",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649939385.log",
+      "fetched": false
+    },
+    {
+      "id": "2649934189",
+      "date": "2026-07-16 04:12",
+      "opponent": "Amdevious",
+      "opp_rating": 1199,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649934189",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649934189.log",
+      "fetched": false
+    },
+    {
+      "id": "2649875844",
+      "date": "2026-07-16 01:23",
+      "opponent": "underat3d m0ns!",
+      "opp_rating": 1133,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649875844",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649875844.log",
+      "fetched": false
+    },
+    {
+      "id": "2649873854",
+      "date": "2026-07-16 01:19",
+      "opponent": "bignate24",
+      "opp_rating": 1213,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649873854",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649873854.log",
+      "fetched": false
+    },
+    {
+      "id": "2649812267",
+      "date": "2026-07-15 22:26",
+      "opponent": "sillyfrog2003",
+      "opp_rating": 1119,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649812267",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649812267.log",
+      "fetched": false
+    },
+    {
+      "id": "2649806407",
+      "date": "2026-07-15 22:12",
+      "opponent": "Kingmonte97",
+      "opp_rating": 1040,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649806407",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649806407.log",
+      "fetched": false
+    },
+    {
+      "id": "2649801523",
+      "date": "2026-07-15 22:01",
+      "opponent": "Woocha",
+      "opp_rating": 1139,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649801523",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649801523.log",
+      "fetched": false
+    },
+    {
+      "id": "2649798612",
+      "date": "2026-07-15 21:52",
+      "opponent": "IlBurtoMatto22",
+      "opp_rating": 1160,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649798612",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649798612.log",
+      "fetched": false
+    },
+    {
+      "id": "2649792954",
+      "date": "2026-07-15 21:40",
+      "opponent": "Pratmaster",
+      "opp_rating": 1170,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649792954",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649792954.log",
+      "fetched": false
+    },
+    {
+      "id": "2649791863",
+      "date": "2026-07-15 21:35",
+      "opponent": "karstagatio",
+      "opp_rating": 1064,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649791863",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649791863.log",
+      "fetched": false
+    },
+    {
+      "id": "2649789468",
+      "date": "2026-07-15 21:29",
+      "opponent": "pcrlbot07eb9ff3ba",
+      "opp_rating": 1064,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649789468",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649789468.log",
+      "fetched": false
+    },
+    {
+      "id": "2649785949",
+      "date": "2026-07-15 21:20",
+      "opponent": "Ironbough29517",
+      "opp_rating": 1161,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649785949",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649785949.log",
+      "fetched": false
+    },
+    {
+      "id": "2649783892",
+      "date": "2026-07-15 21:15",
+      "opponent": "ocean_man25455",
+      "opp_rating": 1141,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649783892",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649783892.log",
+      "fetched": false
+    },
+    {
+      "id": "2649762572",
+      "date": "2026-07-15 20:20",
+      "opponent": "VentusVerus",
+      "opp_rating": 1060,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649762572",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649762572.log",
+      "fetched": false
+    },
+    {
+      "id": "2649759675",
+      "date": "2026-07-15 20:14",
+      "opponent": "i2on_ts7n4mi",
+      "opp_rating": 1182,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649759675",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649759675.log",
+      "fetched": false
+    },
+    {
+      "id": "2649757456",
+      "date": "2026-07-15 20:07",
+      "opponent": "eggsandwich6208",
+      "opp_rating": 1123,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649757456",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649757456.log",
+      "fetched": false
+    },
+    {
+      "id": "2649754038",
+      "date": "2026-07-15 20:04",
+      "opponent": "ogerdogi",
+      "opp_rating": 1150,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649754038",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649754038.log",
+      "fetched": false
+    },
+    {
+      "id": "2649752836",
+      "date": "2026-07-15 19:58",
+      "opponent": "bakekp",
+      "opp_rating": 1161,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649752836",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649752836.log",
+      "fetched": false
+    },
+    {
+      "id": "2649750598",
+      "date": "2026-07-15 19:53",
+      "opponent": "jaborro95",
+      "opp_rating": 1182,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649750598",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649750598.log",
+      "fetched": false
+    },
+    {
+      "id": "2649748669",
+      "date": "2026-07-15 19:50",
+      "opponent": "ohmelia",
+      "opp_rating": 1186,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649748669",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649748669.log",
+      "fetched": false
+    },
+    {
+      "id": "2649745878",
+      "date": "2026-07-15 19:45",
+      "opponent": "in a bot",
+      "opp_rating": 1182,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649745878",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649745878.log",
+      "fetched": false
+    },
+    {
+      "id": "2649743251",
+      "date": "2026-07-15 19:37",
+      "opponent": "rohitking",
+      "opp_rating": 1205,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649743251",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649743251.log",
+      "fetched": false
+    },
+    {
+      "id": "2649739654",
+      "date": "2026-07-15 19:30",
+      "opponent": "mardeygrah",
+      "opp_rating": 1232,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649739654",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649739654.log",
+      "fetched": false
+    },
+    {
+      "id": "2649736587",
+      "date": "2026-07-15 19:21",
+      "opponent": "dogerunner",
+      "opp_rating": 1256,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649736587",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649736587.log",
+      "fetched": false
+    },
+    {
+      "id": "2649734575",
+      "date": "2026-07-15 19:17",
+      "opponent": "pa-co-lg-bl",
+      "opp_rating": 1225,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649734575",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649734575.log",
+      "fetched": false
+    },
+    {
+      "id": "2649731922",
+      "date": "2026-07-15 19:11",
+      "opponent": "carliex",
+      "opp_rating": 1245,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649731922",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649731922.log",
+      "fetched": false
+    },
+    {
+      "id": "2649730317",
+      "date": "2026-07-15 19:06",
+      "opponent": "LipeFoxBR",
+      "opp_rating": 1272,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649730317",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649730317.log",
+      "fetched": false
+    },
+    {
+      "id": "2649728529",
+      "date": "2026-07-15 19:02",
+      "opponent": "Drakeni",
+      "opp_rating": 1242,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649728529",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649728529.log",
+      "fetched": false
+    },
+    {
+      "id": "2649727150",
+      "date": "2026-07-15 18:57",
+      "opponent": "Rusl2",
+      "opp_rating": 1140,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649727150",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649727150.log",
+      "fetched": false
+    },
+    {
+      "id": "2649468259",
+      "date": "2026-07-15 07:23",
+      "opponent": "Dissidente",
+      "opp_rating": 1174,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649468259",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649468259.log",
+      "fetched": false
+    },
+    {
+      "id": "2649466837",
+      "date": "2026-07-15 07:13",
+      "opponent": "nico2097",
+      "opp_rating": 1140,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649466837",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649466837.log",
+      "fetched": false
+    },
+    {
+      "id": "2649464396",
+      "date": "2026-07-15 07:09",
+      "opponent": "Dissidente",
+      "opp_rating": 1176,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649464396",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649464396.log",
+      "fetched": false
+    },
+    {
+      "id": "2649462937",
+      "date": "2026-07-15 07:01",
+      "opponent": "lankybox098901",
+      "opp_rating": 1163,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649462937",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649462937.log",
+      "fetched": false
+    },
+    {
+      "id": "2649462241",
+      "date": "2026-07-15 06:55",
+      "opponent": "okabe44",
+      "opp_rating": 1150,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649462241",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649462241.log",
+      "fetched": false
+    },
+    {
+      "id": "2649461256",
+      "date": "2026-07-15 06:53",
+      "opponent": "xxslayrxx",
+      "opp_rating": 1079,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649461256",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649461256.log",
+      "fetched": false
+    },
+    {
+      "id": "2649459906",
+      "date": "2026-07-15 06:47",
+      "opponent": "calyrexy0002",
+      "opp_rating": 1118,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649459906",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649459906.log",
+      "fetched": false
+    },
+    {
+      "id": "2649458543",
+      "date": "2026-07-15 06:42",
+      "opponent": "xinvallerio",
+      "opp_rating": 1124,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649458543",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2649458543.log",
+      "fetched": false
+    },
+    {
+      "id": "2648845122",
+      "date": "2026-07-14 02:11",
+      "opponent": "pcrlbot056dc24b68",
+      "opp_rating": 1124,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648845122",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648845122.log",
+      "fetched": false
+    },
+    {
+      "id": "2648794575",
+      "date": "2026-07-13 23:58",
+      "opponent": "OriolPau",
+      "opp_rating": 1160,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648794575",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648794575.log",
+      "fetched": false
+    },
+    {
+      "id": "2648397175",
+      "date": "2026-07-13 06:42",
+      "opponent": "pcrlbot056dc24b68",
+      "opp_rating": 1124,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648397175",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648397175.log",
+      "fetched": false
+    },
+    {
+      "id": "2648395037",
+      "date": "2026-07-13 06:34",
+      "opponent": "pcrlbot014766a8d8",
+      "opp_rating": 1150,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648395037",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648395037.log",
+      "fetched": false
+    },
+    {
+      "id": "2648368800",
+      "date": "2026-07-13 04:58",
+      "opponent": "pcrlbot07eb9ff3ba",
+      "opp_rating": 1170,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648368800",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2648368800.log",
+      "fetched": false
+    },
+    {
+      "id": "2647873772",
+      "date": "2026-07-12 03:52",
+      "opponent": "pcrlbot090946f297",
+      "opp_rating": 1063,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2647873772",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2647873772.log",
+      "fetched": false
+    },
+    {
+      "id": "2647870925",
+      "date": "2026-07-12 03:42",
+      "opponent": "Carchdraw84172",
+      "opp_rating": 1109,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2647870925",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2647870925.log",
+      "fetched": false
+    },
+    {
+      "id": "2647833508",
+      "date": "2026-07-12 01:47",
+      "opponent": "pcrlbot0421735f7b",
+      "opp_rating": 1065,
+      "bot": true,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2647833508",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2647833508.log",
+      "fetched": false
+    },
+    {
+      "id": "2646705664",
+      "date": "2026-07-09 20:40",
+      "opponent": "Purinja92179",
+      "opp_rating": 1343,
+      "bot": false,
+      "url": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2646705664",
+      "log": "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-2646705664.log",
+      "fetched": false
+    }
+  ]
+}
