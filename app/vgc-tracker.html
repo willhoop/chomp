@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reg M-B Ladder Tracker</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; margin: 0; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #fafaf7; color: #1a1a1a; padding: 20px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #666; font-size: 13px; margin-bottom: 16px; }
+  .cards { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+  .card { background: #fff; border: 1px solid #e5e2da; border-radius: 10px; padding: 12px 16px; min-width: 110px; }
+  .card .big { font-size: 22px; font-weight: 700; }
+  .card .lbl { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: .04em; }
+  .chart-wrap { background: #fff; border: 1px solid #e5e2da; border-radius: 10px; padding: 14px; height: 280px; margin-bottom: 18px; }
+  h2 { font-size: 15px; margin: 18px 0 8px; }
+  table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e2da; border-radius: 10px; overflow: hidden; font-size: 13px; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid #efece5; }
+  th { background: #f3f1ea; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #555; }
+  tr:last-child td { border-bottom: none; }
+  .W { color: #1a7f3c; font-weight: 700; }
+  .L { color: #c0392b; font-weight: 700; }
+  .teamtag { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .lureB { background: #e8f0fe; color: #1a56b0; }
+  .lureA { background: #fde8ef; color: #b01a56; }
+  .rf1 { background: #eaf7e8; color: #2c7a1f; }
+  .rf2 { background: #f3e8fd; color: #7a1fb0; }
+  .lureC { background: #e0f7f4; color: #0d7a6b; }
+  .evilbp { background: #f0e6ff; color: #5b1fb0; }
+  .pivot { background: #fff3e0; color: #b05e1f; }
+  .gs { background: #fdf3e0; color: #9a6b00; }
+  .lessons { background: #fff; border: 1px solid #e5e2da; border-radius: 10px; padding: 12px 16px; font-size: 13px; }
+  .lessons li { margin: 5px 0 5px 16px; }
+</style>
+</head>
+<body>
+<h1>Reg M-B Ladder Tracker</h1>
+<div class="sub">Pokémon Champions VGC 2026 · willhoop · updated 7/15/2026</div>
+
+<div class="cards">
+  <div class="card"><div class="big" id="record">–</div><div class="lbl">Record</div></div>
+  <div class="card"><div class="big" id="peak">–</div><div class="lbl">Peak rating</div></div>
+  <div class="card"><div class="big" id="current">–</div><div class="lbl">Current</div></div>
+  <div class="card"><div class="big" id="lureb">–</div><div class="lbl">Lure B record</div></div>
+</div>
+
+<div class="chart-wrap"><canvas id="ratingChart"></canvas></div>
+
+<h2>Game log</h2>
+<table id="log"><thead><tr><th>#</th><th>Date</th><th>Opponent</th><th>Team</th><th>W/L</th><th>Rating</th><th>Note</th></tr></thead><tbody></tbody></table>
+
+<h2>Standing lessons</h2>
+<div class="lessons"><ol>
+<li>Bring-4 by matchup, not autopilot. <b>Ghold is mandatory vs Staraptor teams.</b> Blaziken vs TTar/sand.</li>
+<li>Never HJK into a probable Protect — Taunt first or target elsewhere.</li>
+<li>Mega Staraptor <b>inverts stat drops</b> — Intimidate/Charm feed it post-mega.</li>
+<li>Foul Play punishes Tsareena (189 Atk) and hits Ghold 2x.</li>
+<li>Contact into Baneful Bunker = poison.</li>
+<li>Sucker Punch discipline: low-HP target behind likely Protect → click Kowtow.</li>
+<li>Enemy Gambits keep staying home vs the lure — expect 4v5 on their side.</li>
+<li><b>Good as Gold blocks YOUR Helping Hand too</b> — never target Gholdengo with status, even friendly.</li>
+<li>Blaziken never switches into rain — Weather Ball/Water is 2x and rain-boosted.</li>
+<li>Vs rain: Whimsicott (Tailwind/Encore) is a required bring for the speed war.</li>
+</ol></div>
+
+<script>
+const games = [
+  { n:1, date:"7/12", opp:"jaziel 723232", team:"Goodstuff", cls:"gs", res:"W", after:1156, note:"Timer win; drawn endgame, out of CC PP" },
+  { n:2, date:"7/13", opp:"woohoojiji", team:"Rage Fist V1", cls:"rf1", res:"W", after:null, note:"Reported win (no replay)" },
+  { n:3, date:"7/13", opp:"jadewisp", team:"Rage Fist V1", cls:"rf1", res:"W", after:1133, note:"Defiant +6 ape carried; Follow Me into Weather Ball mistake" },
+  { n:4, date:"7/14", opp:"OriolPau", team:"Rage Fist V2", cls:"rf2", res:"W", after:1183, note:"TR into their Tailwind; 4-0" },
+  { n:5, date:"7/15", opp:"xinvallerio", team:"Lure A", cls:"lureA", res:"L", after:1124, note:"HJK into TTar Protect; wrong bring-4 vs sand" },
+  { n:6, date:"7/15", opp:"calyrexy0002", team:"Lure B", cls:"lureB", res:"W", after:1150, note:"SD Blaziken sweep" },
+  { n:7, date:"7/15", opp:"xxslayrxx", team:"Lure B", cls:"lureB", res:"W", after:1171, note:"Triple Axel 4x Gliscor; forfeit" },
+  { n:8, date:"7/15", opp:"okabe44", team:"Lure B", cls:"lureB", res:"L", after:1150, note:"Ghold left home vs Staraptor; Charm-inversion sweep" },
+  { n:9, date:"7/15", opp:"lankybox098901", team:"Lure B", cls:"lureB", res:"W", after:1178, note:"Taunt cancelled TR; CC through Chople" },
+  { n:10, date:"7/15", opp:"Dissidente", team:"Lure B", cls:"lureB", res:"W", after:1205, note:"Trick Scarf onto Toxapex; HH Flare Blitz OHKO Zard-Y" },
+  { n:11, date:"7/15", opp:"nico2097", team:"Lure B", cls:"lureB", res:"L", after:1173, note:"T1 HJK into Protect again; HH into Ghold blocked by Good as Gold; Blaziken into rain Weather Ball" },
+  { n:12, date:"7/15", opp:"qewr1234", team:"Lure B", cls:"lureB", res:"W", after:1200, note:"Beat 1207 sun team; Trick Scarf locked Farigiraf out of Foul Play, Ghold won the 1v1" },
+  { n:13, date:"7/15", opp:"Dissidente (rematch)", team:"Lure B", cls:"lureB", res:"W", after:1225, note:"NEW PEAK. SD Blaziken 4 KOs, through Occa Gambit; Taunt denied Pex Recover; they teched for you and still lost" },
+  { n:14, date:"7/15", opp:"J0SSC", team:"Lure B", cls:"lureB", res:"L", after:1195, note:"EQ+Levitate core; brought 4 EQ-weak mons; Trick Scarf onto Runerigus backfired (fast EQ swept); HH into own Ghold again" },
+  { n:15, date:"7/15", opp:"wsxzsd", team:"Lure B", cls:"lureB", res:"L", after:1167, note:"Sun team; Parting Shot brought Ghold into Weather Ball range (OHKO); SD in front of Hatterene = Expanding Force OHKO; 3:40 AM game" },
+  { n:16, date:"7/15", opp:"GuacamoleGobbler", team:"Lure B", cls:"lureB", res:"W", after:1185, note:"4-turn win: Taunt denied Farigiraf TR, Shadow Ball deleted Mega Slowbro + Torkoal, Kowtow cleaned" },
+  { n:17, date:"7/15", opp:"emu2567 (1275)", team:"Lure B", cls:"lureB", res:"W", after:1217, note:"ONE TURN: HJK 4x OHKO'd Mega Kangaskhan through Detect scout; 1275 instant forfeit. Biggest rated win yet" },
+  { n:18, date:"7/15", opp:"fofao89 (1262)", team:"Lure B", cls:"lureB", res:"W", after:1245, note:"2 turns: +2 Blaziken Flare Blitz OHKO'd Mega Zard-Y through the resist again; Kowtow through Colbur Farigiraf; forfeit" },
+  { n:19, date:"7/15", opp:"Rusl2", team:"Lure B", cls:"lureB", res:"W", after:1264, note:"NEW PEAK 1264. Rain revenge w/ correct bring: Triple Axel mirror kill, HJK crit Archaludon, Trop Kick 4x Mega Swampert, HUGE THAW. Note: their Queenly blocked our Prankster Encore" },
+  { n:20, date:"7/15", opp:"Drakeni (1305)", team:"Lure B", cls:"lureB", res:"L", after:1242, note:"Toxapex 1v4'd endgame: left Ghold (the Trick answer) home vs a Pex team; lost Taunt count; Gambit died to Infestation trap; Toxic clocked SD Blaziken" },
+  { n:21, date:"7/15", opp:"LipeFoxBR (1306)", team:"Lure B", cls:"lureB", res:"W", after:1272, note:"NEW PEAK 1272. Comeback after T1 SD into Water Spout killed Blaziken: slow Kowtow OHKO'd Farigiraf under THEIR TR, Trop Kick OHKO'd Mega Blastoise, Ghold 1v2'd the endgame (Sludge-immune x2 + Heat Wave miss). vem pro pai" },
+  { n:22, date:"7/15", opp:"carliex", team:"Lure B", cls:"lureB", res:"L", after:1245, note:"'Rain Zard' dual-weather tech: Pelipper flipped Zard-Y's Weather Ball to Water — crit killed Blaziken, second crit killed Ghold. Two crits, but double-Fire bring into a dual-weather team; Tsareena (water resist) and Whimsi stayed home" },
+  { n:23, date:"7/15", opp:"pa-co-lg-bl (1318)", team:"Lure B", cls:"lureB", res:"L", after:1225, note:"Feather Dance → inverted Mega Staraptor to +2 (the Charm tech, weaponized). Blaziken hard-switched into +2 CC and died on entry; +2 Brave Bird broke the Ghold wall (94% through resist); Triple Axel miss. Good Trick (Scarf-locked Talonflame)" },
+  { n:24, date:"7/15", opp:"dogerunner (1303)", team:"Lure B", cls:"lureB", res:"W", after:1256, note:"Gambit feasted under enemy TR again: Kowtow OHKO'd Farigiraf, then Make It Rain double-KO'd Mega Aerodactyl + Metagross in one click (finisher doctrine). Sucker cleaned Mamoswine" },
+  { n:25, date:"7/15", opp:"mardeygrah", team:"Lure B", cls:"lureB", res:"L", after:1232, note:"Dual-weather (Pelipper+Zard-Y) again — 0-2 vs the archetype. SD Blaziken died to rain Weather Ball (3rd time); Encore into Dark Grimmsnarl; HH into own Ghold (3rd time); Ghold died to sun Weather Ball. Tsareena/Gambit home" },
+  { n:26, date:"7/15", opp:"rohitking", team:"Lure B", cls:"lureB", res:"L", after:1205, note:"Staraptor team: Fake Out'd the bird instead of the Prankster TW setter; Ghold stood next to enemy Gambit (Kowtow'd); Incin brought into its worst matchup (2 CCs). Bright spots: Tsareena HJK killed their Gambit, Queenly blocked Charm. Possibly early forfeit (full Blaziken left)" },
+  { n:27, date:"7/15", opp:"in a bot", team:"Lure B", cls:"lureB", res:"L", after:1182, note:"Water Bubble Araquanid hard-counters Blaziken: halved Flare Blitz, doubled Liquidation KO. Trick roulette fetched Bright Powder + scarfed a nuke again. Good: broke 3-Stamina Archaludon with mixed pressure" },
+  { n:28, date:"7/15", opp:"ohmelia (1213)", team:"Lure B", cls:"lureB", res:"W", after:1209, note:"4th Mega Zard-Y OHKO by +2 Flare Blitz (SD in sun = fine, sun boosts your own FB). Blaziken 3 KOs + recoil death; Gambit+Ghold cleaned Garchomp. Lesson: Encore-locking an ATTACK isn't a lock — their Moonblast-locked Whimsi still got 2 KOs of damage" },
+  { n:29, date:"7/15", opp:"bakekp (1238)", team:"Lure B", cls:"lureB", res:"L", after:1161, note:"Mega Eelektross (Eelevate: +1 Atk per KO) Moxie-chained 3 mons in 4 turns: Knock Off Tsareena, Brick Break 4x Gambit, Knock Off 2x Ghold. Never Encored the Coil. Gambit/Ghold both stood in its coverage. New tier-1 personal threat" },
+  { n:30, date:"7/15", opp:"ogerdogi", team:"Lure B", cls:"lureB", res:"W", after:1187, note:"GHOLDENGO GOD GAME: Tricked their Whimsi's Sash away (Scarf-locked it), then 4 KOs (Whimsi, Bascu, Mega Raichu X, Sneasler) and clutched the 1v1 at 2% HP while Sneasler clicked Dire Claw into Steel three times" },
+  { n:31, date:"7/15", opp:"eggsandwich6208", team:"Lure B", cls:"lureB", res:"W", after:1209, note:"5 turns: Taunt denied Farigiraf TR again, CC OHKO Hydreigon, Shadow Ball killed Torkoal pre-Eruption, and Mega Mawile's Intimidate fed Gambit +2 — Defiant Iron Head cleaned the last two. Their Intimidate lost them the endgame" },
+  { n:32, date:"7/15", opp:"i2on_ts7n4mi", team:"Lure B", cls:"lureB", res:"L", after:1182, note:"Charm-Staraptor 0-3 now. Fake Out went to the right target (Whimsi) but Triple Axel missed Staraptor; Charm landed T2 → +2 bird went 4-0 with stacking CC Def/SpD boosts. Incin fielded vs Staraptor again. Plan: T1 both attacks kill the Charm partner" },
+  { n:33, date:"7/15", opp:"FILTHY_CasualsVGC", team:"Lure B", cls:"lureB", res:"L", after:1157, note:"3 turns: Blaziken hard-switched into Mega Gengar Sludge Bomb (4th switch-into-nuke); Taunt went to Gengar instead of Sableye (the Encore threat — Tsareena's non-Prankster Taunt DOES work on it); Sableye Encored Blaziken's Detect = dead mon; Mega Gengar Shadow Ball OHKO'd Ghold" },
+  { n:34, date:"7/15", opp:"VentusVerus", team:"Lure B", cls:"lureB", res:"W", after:1176, note:"Won 4v2 down early: crit Armor Cannon killed Gambit T1, then Ghold revenge, Triple Axel killed Garchomp, Trop Kick Rotom-W, and Queenly blocked Mega Metagross's Bullet Punch before HJK+Flare Blitz broke it" },
+  { n:35, date:"7/15", opp:"ocean_man25455", team:"Lure B", cls:"lureB", res:"W", after:1182, note:"3-turn forfeit: Triple Axel 2-tapped Garchomp T1, Ghold blanked Sneasler's Dire Claw, Flare Blitz popped their Whimsi's Sash. Won despite 15-second preview crunch" },
+  { n:36, date:"7/15", opp:"Ironbough29517", team:"Lure B", cls:"lureB", res:"L", after:1161, note:"BAD LIVE CALL (mine): sent Gambit into a Zard-Y team — double Heat Wave KO'd Gambit+Blaziken T4. Fix in card: vs Zard+Gambit goodstuff, lead the double Fire-resist (Incin+Blaziken), Tsareena banks in back for their Gambit, your Gambit/Ghold stay home" },
+  { n:37, date:"7/15", opp:"pcrlbot07eb9ff3ba", team:"Lure B", cls:"lureB", res:"W", after:1180, note:"Rain template executed: Tailwind, Ghold Tbolt 4x deleted Pelipper T2, HJK broke Stamina Archaludon, Sucker OHKO'd Bascu + cleaned Mega Venusaur. Whimsi traded for the Tailwind. 2-1 vs rain now" },
+  { n:38, date:"7/15", opp:"karstagatio", team:"Lure B", cls:"lureB", res:"W", after:1198, note:"SD Blaziken 3 KOs (Volcarona thru Rage Powder, Mega Lopunny, their Tsareena); pulled Ghold the moment Scrappy Lopunny appeared; Queenly blocked Scrappy Fake Out (priority block beats Scrappy — Scrappy only beats the Ghost immunity)" },
+  { n:39, date:"7/15", opp:"Pratmaster", team:"Lure B", cls:"lureB", res:"L", after:1170, note:"Two card violations vs a Pelipper team: Blaziken came (4th rain Weather Ball death) and Whimsi stayed home. Mega Audino (Ally Switch/HH/rain Thunder) + White Herb Shell Smash Blastoise = new tech. Good: Trop Kick killed the Smasher, Taunts landed, endgame lost on Thunder coinflips" },
+  { n:40, date:"7/15", opp:"amador com short", team:"Lure B", cls:"lureB", res:"W", after:1188, note:"Contrary Mega Malamar team (own Sinistcha Strength Sap = +1 Atk to it; even Moonblast's SpA drop fed it). No-Incin call correct. FB killed Sinistcha through Rage Powder, Moonblast 2HKO'd Malamar, Sucker + their FB recoil cleaned. 4-turn forfeit" },
+  { n:41, date:"7/15", opp:"IlBurtoMatto22", team:"Lure B", cls:"lureB", res:"L", after:1160, note:"Right bring/lead per card, lost anyway: Trick Scarf onto STAMINA ARCHALUDON (scarfed-a-nuke #3) let it outspeed and double-Dragon-Pulse Tsareena; their screens+Protect kept Arch alive at 5% margins; Mega Swampert HH + rain WB closed. Taunt on Grimm came one screen late" },
+  { n:42, date:"7/15", opp:"Woocha (1212)", team:"Lure B", cls:"lureB", res:"L", after:1139, note:"Skill Swap CONTRARY INCINEROAR tech: Malamar swapped Contrary onto its Incin (CC = +1 Def/SpD per click, Intimidate re-proc on Malamar) — it went 3-0 with stacking bulk. Passive T1 gave Malamar free TR. Gambit ate a 4x CC again. Mega Dragonite (rain Hurricane) also new. Quality opponent, quality tech" },
+  { n:43, date:"7/15", opp:"Kingmonte97", team:"Lure B", cls:"lureB", res:"W", after:1158, note:"4-0 SWEEP, zero losses. Every lesson fired: Taunt the slow psychic (Slowking-G TR denied T1), killed Coil Milotic before the snowball, Snarl fed Defiant +2, Triple Axel deleted Sinistcha-Masterpiece + Slowking, Sucker finished Mega Crabominable. Opp: 'Your no fun'" },
+  { n:44, date:"7/15", opp:"Wekio (1202)", team:"Lure B", cls:"lureB", res:"L", after:1136, note:"STARAPTOR 0-4. Real luck (min-roll Triple Axel left their Whimsi at 1%, HJK miss) BUT: Fake Out skipped the Prankster, Incin came again and Intimidate fed THEIR Gambit +2, and Trick gave that +2 Gambit a SCARF (scarfed-a-nuke #4). New tech: Shed Tail Heliolisk passes a Sub to Mega Staraptor" },
+  { n:45, date:"7/15", opp:"sillyfrog2003", team:"Lure C (Bascu)", cls:"lureC", res:"W", after:1162, note:"BASCU DEBUT = FIRST STARAPTOR-ARCHETYPE WIN. Pre-mega Intimidate stuck (-1 all game), Taunt denied Gardevoir TR, Adaptability Wave Crash chunked the bird to 7% and its own Brave Bird recoil left it at 1%. 4-turn forfeit" },
+  { n:46, date:"7/15", opp:"StopTheFakeGames", team:"Lure C (Bascu)", cls:"lureC", res:"W", after:1181, note:"2-turn forfeit: Taunt Sableye T1, Kowtow chunked Milotic then OHKO'd Scovillain on the switch. Tsareena survived a crit Blizzard at 1%. Will brought Ghold against advice — it never saw the field, jury adjourned" },
+  { n:47, date:"7/15", opp:"wahskdhasd", team:"Lure C (Bascu)", cls:"lureC", res:"W", after:1205, note:"LURE C 3-0, back over 1200. Their Incin's Intimidate fed Defiant +2 T1; their WoW missed; Tsareena traded herself for their Incin via HJK+recoil; Kowtow OHKO'd Sinistcha. New: Mega Dragalge (Regenerator), Sinistcha 'Hospitality' heal ability" },
+  { n:48, date:"7/15", opp:"bignate24 (1241)", team:"Evil BP", cls:"evilbp", res:"W", after:1233, note:"EVIL BP DEBUT WIN vs a 1241. Mental Herb ate the Encore exactly as designed, double pass executed, Mega Clefable is EQ-IMMUNE (levitates — spread EQ freely next to it), Scolipede Gunk Shot killed Mega Floette. Forfeit facing boosted Unaware Clef" },
+  { n:49, date:"7/15", opp:"underat3d m0ns!", team:"Evil BP", cls:"evilbp", res:"W", after:1252, note:"Evil BP 2-0. HUGE discovery: MEGA CLEFABLE HAS MAGIC BOUNCE — reflected Glare twice; Taunt/Encore/status bounce back once mega'd. Gunk Shot killed Mega Sceptile; their Discharge friendly-fired own Whimsi. Sturdy Arch pass got Discharged tho — pass target matters" },
+  { n:50, date:"7/16", opp:"Amdevious", team:"Pivot Regen", cls:"pivot", res:"L", after:1199, note:"Pivot Regen debut loss to the Zard+Gambit collision team (now 0-3 across ALL rosters). Their Gambit LED: Intimidate fed +2 with no Tsareena to punish; +2 Sucker + Tantrum went 2-0 up by T2. Comeback to 2-2 (Contrary Superpower broke Sash, crit Draco) but sun Weather Ball had Dragalge at 3%. Team has no dedicated Gambit answer" },
+  { n:51, date:"7/16", opp:"Chazznox", team:"Pivot Regen", cls:"pivot", res:"W", after:1217, note:"First Pivot Regen win. THEIR Intimidate fed Contrary Malamar +1 on entry; it snowballed to +4/+4 with 3 KOs (Rock Slide, Superpower) across two TR windows. Hospitality heal proc'd on cue. Costs: Draco missed twice, Ally Switch juked Dragalge into a Sucker + one Superpower into Ghost immunity" },
+  { n:52, date:"7/16", opp:"red1706", team:"Pivot Regen", cls:"pivot", res:"L", after:1186, note:"COMBO AUTOPSY: Skill Swap landed on BASE Dragalge (entered via Parting Shot, hadn't mega'd) — then MEGA EVOLUTION OVERWROTE THE ABILITY back to Regenerator, wiping Contrary. Rule: MEGA FIRST, SWAP SECOND. Also Gambit+sun family beats Pivot Regen again; Rotom Hydro miss; Yawn cycles" },
+  { n:53, date:"7/16", opp:"huliweiba (1078)", team:"Pivot Regen", cls:"pivot", res:"L", after:1153, note:"THE COMBO WORKED — first Contrary Draco (+2) on record — then a crit +2 Ice Beam deleted Dragalge next action: his own Intimidate had fed COMPETITIVE EMPOLEON (+2 SpA). Also clicked Skill Swap a 2nd time (would have UNDONE the combo; ally Protect accidentally blocked it). Add Empoleon to the Competitive list. -33 to a 1078" },
+  { n:54, date:"7/16", opp:"IcySoulLink (1216)", team:"Pivot Regen", cls:"pivot", res:"L", after:1132, note:"TR MIRROR PROBLEM: their dedicated TR team (Farigiraf/Torkoal/Mawile/Eelektross, true min speeds) out-slowed his mid-speed TR mode. AND Malamar stayed home vs a Farigiraf team = no TR toggle, no denial (Taunt was cut for Skill Swap). Sun Eruption 2x killed Sinistcha; Psychic 2x killed Dragalge. Pivot Regen 1-4" },
+];
+
+const wins = games.filter(g => g.res === "W").length;
+const losses = games.filter(g => g.res === "L").length;
+const rated = games.filter(g => g.after !== null);
+const lureB = games.filter(g => g.team === "Lure B");
+document.getElementById("record").textContent = wins + "-" + losses;
+document.getElementById("peak").textContent = Math.max(...rated.map(g => g.after));
+document.getElementById("current").textContent = rated[rated.length - 1].after;
+document.getElementById("lureb").textContent = lureB.filter(g=>g.res==="W").length + "-" + lureB.filter(g=>g.res==="L").length;
+
+const tbody = document.querySelector("#log tbody");
+games.forEach(g => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = "<td>" + g.n + "</td><td>" + g.date + "</td><td>" + g.opp + "</td>" +
+    "<td><span class='teamtag " + g.cls + "'>" + g.team + "</span></td>" +
+    "<td class='" + g.res + "'>" + g.res + "</td><td>" + (g.after ?? "—") + "</td><td>" + g.note + "</td>";
+  tbody.appendChild(tr);
+});
+
+new Chart(document.getElementById("ratingChart"), {
+  type: "line",
+  data: {
+    labels: rated.map(g => "#" + g.n + " " + g.opp.slice(0, 10)),
+    datasets: [{
+      label: "Rating",
+      data: rated.map(g => g.after),
+      borderColor: "#1a56b0",
+      backgroundColor: "rgba(26,86,176,.08)",
+      fill: true,
+      tension: 0.25,
+      pointBackgroundColor: rated.map(g => g.res === "W" ? "#1a7f3c" : "#c0392b"),
+      pointRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, title: { display: true, text: "Rating after each logged game (green = W, red = L)" } },
+    scales: { y: { suggestedMin: 1100, suggestedMax: 1250 } }
+  }
+});
+</script>
+</body>
+</html>
