@@ -1,0 +1,499 @@
+// ==UserScript==
+// @name         CHOMP — Bring 4 (Real Damage Model)
+// @namespace    willhoop.vgc
+// @version      2.0
+// @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
+// @match        https://play.pokemonshowdown.com/*
+// @run-at       document-idle
+// @grant        none
+// ==/UserScript==
+(function(){
+"use strict";
+const MONS={"venusaur":{"name":"Venusaur","t":["Grass","Poison"],"bs":{"hp":80,"atk":82,"def":83,"spa":100,"spd":100,"spe":80}},"arbok":{"name":"Arbok","t":["Poison"],"bs":{"hp":60,"atk":95,"def":69,"spa":65,"spd":79,"spe":80}},"vileplume":{"name":"Vileplume","t":["Grass","Poison"],"bs":{"hp":75,"atk":80,"def":85,"spa":110,"spd":90,"spe":50}},"victreebel":{"name":"Victreebel","t":["Grass","Poison"],"bs":{"hp":80,"atk":105,"def":65,"spa":100,"spd":70,"spe":70}},"slowbro-galar":{"name":"Slowbro-Galar","t":["Poison","Psychic"],"bs":{"hp":95,"atk":100,"def":95,"spa":100,"spd":70,"spe":30}},"gengar":{"name":"Gengar","t":["Ghost","Poison"],"bs":{"hp":60,"atk":65,"def":60,"spa":130,"spd":75,"spe":110}},"ariados":{"name":"Ariados","t":["Bug","Poison"],"bs":{"hp":70,"atk":90,"def":70,"spa":60,"spd":70,"spe":40}},"slowking-galar":{"name":"Slowking-Galar","t":["Poison","Psychic"],"bs":{"hp":95,"atk":65,"def":80,"spa":110,"spd":110,"spe":30}},"qwilfish":{"name":"Qwilfish","t":["Water","Poison"],"bs":{"hp":65,"atk":95,"def":85,"spa":55,"spd":55,"spe":85}},"toxicroak":{"name":"Toxicroak","t":["Poison","Fighting"],"bs":{"hp":83,"atk":106,"def":65,"spa":86,"spd":65,"spe":85}},"scolipede":{"name":"Scolipede","t":["Bug","Poison"],"bs":{"hp":60,"atk":100,"def":89,"spa":55,"spd":69,"spe":112}},"scrafty":{"name":"Scrafty","t":["Dark","Fighting"],"bs":{"hp":65,"atk":90,"def":115,"spa":45,"spd":115,"spe":58}},"garbodor":{"name":"Garbodor","t":["Poison"],"bs":{"hp":80,"atk":95,"def":82,"spa":60,"spd":82,"spe":75}},"eelektross":{"name":"Eelektross","t":["Electric"],"bs":{"hp":85,"atk":115,"def":80,"spa":105,"spd":80,"spe":50}},"dragalge":{"name":"Dragalge","t":["Poison","Dragon"],"bs":{"hp":65,"atk":75,"def":90,"spa":97,"spd":123,"spe":44}},"goodra":{"name":"Goodra","t":["Dragon"],"bs":{"hp":90,"atk":100,"def":70,"spa":110,"spd":150,"spe":80}},"goodra-hisui":{"name":"Goodra-Hisui","t":["Steel","Dragon"],"bs":{"hp":80,"atk":100,"def":100,"spa":110,"spd":150,"spe":60}},"toxapex":{"name":"Toxapex","t":["Poison","Water"],"bs":{"hp":50,"atk":63,"def":152,"spa":53,"spd":142,"spe":35}},"salazzle":{"name":"Salazzle","t":["Poison","Fire"],"bs":{"hp":68,"atk":64,"def":60,"spa":111,"spd":60,"spe":117}},"flapple":{"name":"Flapple","t":["Grass","Dragon"],"bs":{"hp":70,"atk":110,"def":80,"spa":95,"spd":60,"spe":70}},"sneasler":{"name":"Sneasler","t":["Fighting","Poison"],"bs":{"hp":80,"atk":130,"def":60,"spa":40,"spd":80,"spe":120}},"overqwil":{"name":"Overqwil","t":["Dark","Poison"],"bs":{"hp":85,"atk":115,"def":95,"spa":65,"spd":65,"spe":85}},"armarouge":{"name":"Armarouge","t":["Fire","Psychic"],"bs":{"hp":85,"atk":60,"def":100,"spa":125,"spd":80,"spe":75}},"bellibolt":{"name":"Bellibolt","t":["Electric"],"bs":{"hp":109,"atk":64,"def":91,"spa":103,"spd":83,"spe":45}},"glimmora":{"name":"Glimmora","t":["Rock","Poison"],"bs":{"hp":83,"atk":55,"def":90,"spa":130,"spd":81,"spe":86}},"clefable":{"name":"Clefable","t":["Fairy"],"bs":{"hp":95,"atk":70,"def":73,"spa":95,"spd":90,"spe":60}},"slowbro":{"name":"Slowbro","t":["Water","Psychic"],"bs":{"hp":95,"atk":75,"def":110,"spa":100,"spd":80,"spe":30}},"snorlax":{"name":"Snorlax","t":["Normal"],"bs":{"hp":160,"atk":110,"def":65,"spa":65,"spd":110,"spe":30}},"azumarill":{"name":"Azumarill","t":["Water","Fairy"],"bs":{"hp":100,"atk":50,"def":80,"spa":60,"spd":80,"spe":50}},"politoed":{"name":"Politoed","t":["Water"],"bs":{"hp":90,"atk":75,"def":75,"spa":90,"spd":100,"spe":70}},"slowking":{"name":"Slowking","t":["Water","Psychic"],"bs":{"hp":95,"atk":75,"def":80,"spa":100,"spd":110,"spe":30}},"swampert":{"name":"Swampert","t":["Water","Ground"],"bs":{"hp":100,"atk":110,"def":90,"spa":85,"spd":90,"spe":60}},"camerupt":{"name":"Camerupt","t":["Fire","Ground"],"bs":{"hp":70,"atk":100,"def":70,"spa":105,"spd":75,"spe":40}},"torkoal":{"name":"Torkoal","t":["Fire"],"bs":{"hp":70,"atk":85,"def":140,"spa":85,"spd":70,"spe":20}},"castform":{"name":"Castform","t":["Normal"],"bs":{"hp":70,"atk":70,"def":70,"spa":70,"spd":70,"spe":70}},"torterra":{"name":"Torterra","t":["Grass","Ground"],"bs":{"hp":95,"atk":109,"def":105,"spa":75,"spd":85,"spe":56}},"hippowdon":{"name":"Hippowdon","t":["Ground"],"bs":{"hp":108,"atk":112,"def":118,"spa":68,"spd":72,"spe":47}},"mamoswine":{"name":"Mamoswine","t":["Ice","Ground"],"bs":{"hp":110,"atk":130,"def":80,"spa":70,"spd":60,"spe":80}},"simisear":{"name":"Simisear","t":["Fire"],"bs":{"hp":75,"atk":98,"def":63,"spa":98,"spd":63,"spe":101}},"musharna":{"name":"Musharna","t":["Psychic"],"bs":{"hp":116,"atk":55,"def":85,"spa":107,"spd":95,"spe":29}},"audino":{"name":"Audino","t":["Normal"],"bs":{"hp":103,"atk":60,"def":86,"spa":60,"spd":86,"spe":50}},"volcarona":{"name":"Volcarona","t":["Bug","Fire"],"bs":{"hp":85,"atk":60,"def":65,"spa":135,"spd":105,"spe":100}},"slurpuff":{"name":"Slurpuff","t":["Fairy"],"bs":{"hp":82,"atk":80,"def":86,"spa":85,"spd":75,"spe":72}},"primarina":{"name":"Primarina","t":["Water","Fairy"],"bs":{"hp":80,"atk":74,"def":74,"spa":126,"spd":116,"spe":60}},"crabominable":{"name":"Crabominable","t":["Fighting","Ice"],"bs":{"hp":97,"atk":132,"def":77,"spa":62,"spd":67,"spe":43}},"drampa":{"name":"Drampa","t":["Normal","Dragon"],"bs":{"hp":78,"atk":60,"def":85,"spa":135,"spd":91,"spe":36}},"appletun":{"name":"Appletun","t":["Grass","Dragon"],"bs":{"hp":110,"atk":85,"def":80,"spa":100,"spd":80,"spe":30}},"runerigus":{"name":"Runerigus","t":["Ground","Ghost"],"bs":{"hp":58,"atk":95,"def":145,"spa":50,"spd":105,"spe":30}},"farigiraf":{"name":"Farigiraf","t":["Normal","Psychic"],"bs":{"hp":120,"atk":90,"def":70,"spa":110,"spd":70,"spe":60}},"charizard":{"name":"Charizard","t":["Fire","Flying"],"bs":{"hp":78,"atk":84,"def":78,"spa":109,"spd":85,"spe":100}},"blastoise":{"name":"Blastoise","t":["Water"],"bs":{"hp":79,"atk":83,"def":100,"spa":85,"spd":105,"spe":78}},"pikachu":{"name":"Pikachu","t":["Electric"],"bs":{"hp":35,"atk":55,"def":40,"spa":50,"spd":50,"spe":90}},"raichu":{"name":"Raichu","t":["Electric"],"bs":{"hp":60,"atk":90,"def":55,"spa":90,"spd":80,"spe":110}},"raichu-alola":{"name":"Raichu-Alola","t":["Electric","Psychic"],"bs":{"hp":60,"atk":85,"def":50,"spa":95,"spd":85,"spe":110}},"ninetales":{"name":"Ninetales","t":["Fire"],"bs":{"hp":73,"atk":76,"def":75,"spa":81,"spd":100,"spe":100}},"ninetales-alola":{"name":"Ninetales-Alola","t":["Ice","Fairy"],"bs":{"hp":73,"atk":67,"def":75,"spa":81,"spd":100,"spe":109}},"arcanine":{"name":"Arcanine","t":["Fire"],"bs":{"hp":90,"atk":110,"def":80,"spa":100,"spd":80,"spe":95}},"arcanine-hisui":{"name":"Arcanine-Hisui","t":["Fire","Rock"],"bs":{"hp":95,"atk":115,"def":80,"spa":95,"spd":80,"spe":90}},"alakazam":{"name":"Alakazam","t":["Psychic"],"bs":{"hp":55,"atk":50,"def":45,"spa":135,"spd":95,"spe":120}},"machamp":{"name":"Machamp","t":["Fighting"],"bs":{"hp":90,"atk":130,"def":80,"spa":65,"spd":85,"spe":55}},"kangaskhan":{"name":"Kangaskhan","t":["Normal"],"bs":{"hp":105,"atk":95,"def":80,"spa":40,"spd":80,"spe":90}},"pinsir":{"name":"Pinsir","t":["Bug"],"bs":{"hp":65,"atk":125,"def":100,"spa":55,"spd":70,"spe":85}},"tauros":{"name":"Tauros","t":["Normal"],"bs":{"hp":75,"atk":100,"def":95,"spa":40,"spd":70,"spe":110}},"tauros-paldeacombat":{"name":"Tauros-Paldeacombat","t":["Fighting"],"bs":{"hp":75,"atk":110,"def":105,"spa":30,"spd":70,"spe":100}},"tauros-paldeablaze":{"name":"Tauros-Paldeablaze","t":["Fighting","Fire"],"bs":{"hp":75,"atk":110,"def":105,"spa":30,"spd":70,"spe":100}},"tauros-paldeaaqua":{"name":"Tauros-Paldeaaqua","t":["Fighting","Water"],"bs":{"hp":75,"atk":110,"def":105,"spa":30,"spd":70,"spe":100}},"gyarados":{"name":"Gyarados","t":["Water","Flying"],"bs":{"hp":95,"atk":125,"def":79,"spa":60,"spd":100,"spe":81}},"vaporeon":{"name":"Vaporeon","t":["Water"],"bs":{"hp":130,"atk":65,"def":60,"spa":110,"spd":95,"spe":65}},"jolteon":{"name":"Jolteon","t":["Electric"],"bs":{"hp":65,"atk":65,"def":60,"spa":110,"spd":95,"spe":130}},"flareon":{"name":"Flareon","t":["Fire"],"bs":{"hp":65,"atk":130,"def":60,"spa":95,"spd":110,"spe":65}},"dragonite":{"name":"Dragonite","t":["Dragon","Flying"],"bs":{"hp":91,"atk":134,"def":95,"spa":100,"spd":100,"spe":80}},"meganium":{"name":"Meganium","t":["Grass"],"bs":{"hp":80,"atk":82,"def":100,"spa":83,"spd":100,"spe":80}},"typhlosion":{"name":"Typhlosion","t":["Fire"],"bs":{"hp":78,"atk":84,"def":78,"spa":109,"spd":85,"spe":100}},"typhlosion-hisui":{"name":"Typhlosion-Hisui","t":["Fire","Ghost"],"bs":{"hp":73,"atk":84,"def":78,"spa":119,"spd":85,"spe":95}},"feraligatr":{"name":"Feraligatr","t":["Water"],"bs":{"hp":85,"atk":105,"def":100,"spa":79,"spd":83,"spe":78}},"ampharos":{"name":"Ampharos","t":["Electric"],"bs":{"hp":90,"atk":75,"def":85,"spa":115,"spd":90,"spe":55}},"espeon":{"name":"Espeon","t":["Psychic"],"bs":{"hp":65,"atk":65,"def":60,"spa":130,"spd":95,"spe":110}},"umbreon":{"name":"Umbreon","t":["Dark"],"bs":{"hp":95,"atk":65,"def":110,"spa":60,"spd":130,"spe":65}},"forretress":{"name":"Forretress","t":["Bug","Steel"],"bs":{"hp":75,"atk":90,"def":140,"spa":60,"spd":60,"spe":40}},"steelix":{"name":"Steelix","t":["Steel","Ground"],"bs":{"hp":75,"atk":85,"def":200,"spa":55,"spd":65,"spe":30}},"heracross":{"name":"Heracross","t":["Bug","Fighting"],"bs":{"hp":80,"atk":125,"def":75,"spa":40,"spd":95,"spe":85}},"houndoom":{"name":"Houndoom","t":["Dark","Fire"],"bs":{"hp":75,"atk":90,"def":50,"spa":110,"spd":80,"spe":95}},"tyranitar":{"name":"Tyranitar","t":["Rock","Dark"],"bs":{"hp":100,"atk":134,"def":110,"spa":95,"spd":100,"spe":61}},"sceptile":{"name":"Sceptile","t":["Grass"],"bs":{"hp":70,"atk":85,"def":65,"spa":105,"spd":85,"spe":120}},"blaziken":{"name":"Blaziken","t":["Fire","Fighting"],"bs":{"hp":80,"atk":120,"def":70,"spa":110,"spd":70,"spe":80}},"pelipper":{"name":"Pelipper","t":["Water","Flying"],"bs":{"hp":60,"atk":50,"def":100,"spa":95,"spd":70,"spe":65}},"gardevoir":{"name":"Gardevoir","t":["Psychic","Fairy"],"bs":{"hp":68,"atk":65,"def":65,"spa":125,"spd":115,"spe":80}},"sableye":{"name":"Sableye","t":["Dark","Ghost"],"bs":{"hp":50,"atk":75,"def":75,"spa":65,"spd":65,"spe":50}},"mawile":{"name":"Mawile","t":["Steel","Fairy"],"bs":{"hp":50,"atk":85,"def":85,"spa":55,"spd":55,"spe":50}},"aggron":{"name":"Aggron","t":["Steel","Rock"],"bs":{"hp":70,"atk":110,"def":180,"spa":60,"spd":60,"spe":50}},"medicham":{"name":"Medicham","t":["Fighting","Psychic"],"bs":{"hp":60,"atk":60,"def":75,"spa":60,"spd":75,"spe":80}},"manectric":{"name":"Manectric","t":["Electric"],"bs":{"hp":70,"atk":75,"def":60,"spa":105,"spd":60,"spe":105}},"altaria":{"name":"Altaria","t":["Dragon","Flying"],"bs":{"hp":75,"atk":70,"def":90,"spa":70,"spd":105,"spe":80}},"milotic":{"name":"Milotic","t":["Water"],"bs":{"hp":95,"atk":60,"def":79,"spa":100,"spd":125,"spe":81}},"absol":{"name":"Absol","t":["Dark"],"bs":{"hp":65,"atk":130,"def":60,"spa":75,"spd":60,"spe":75}},"glalie":{"name":"Glalie","t":["Ice"],"bs":{"hp":80,"atk":80,"def":80,"spa":80,"spd":80,"spe":80}},"metagross":{"name":"Metagross","t":["Steel","Psychic"],"bs":{"hp":80,"atk":135,"def":130,"spa":95,"spd":90,"spe":70}},"infernape":{"name":"Infernape","t":["Fire","Fighting"],"bs":{"hp":76,"atk":104,"def":71,"spa":104,"spd":71,"spe":108}},"empoleon":{"name":"Empoleon","t":["Water","Steel"],"bs":{"hp":84,"atk":86,"def":88,"spa":111,"spd":101,"spe":60}},"luxray":{"name":"Luxray","t":["Electric"],"bs":{"hp":80,"atk":120,"def":79,"spa":95,"spd":79,"spe":70}},"roserade":{"name":"Roserade","t":["Grass","Poison"],"bs":{"hp":60,"atk":70,"def":65,"spa":125,"spd":105,"spe":90}},"rampardos":{"name":"Rampardos","t":["Rock"],"bs":{"hp":97,"atk":165,"def":60,"spa":65,"spd":50,"spe":58}},"bastiodon":{"name":"Bastiodon","t":["Rock","Steel"],"bs":{"hp":60,"atk":52,"def":168,"spa":47,"spd":138,"spe":30}},"spiritomb":{"name":"Spiritomb","t":["Ghost","Dark"],"bs":{"hp":50,"atk":92,"def":108,"spa":92,"spd":108,"spe":35}},"garchomp":{"name":"Garchomp","t":["Dragon","Ground"],"bs":{"hp":108,"atk":130,"def":95,"spa":80,"spd":85,"spe":102}},"lucario":{"name":"Lucario","t":["Fighting","Steel"],"bs":{"hp":70,"atk":110,"def":70,"spa":115,"spd":70,"spe":90}},"abomasnow":{"name":"Abomasnow","t":["Grass","Ice"],"bs":{"hp":90,"atk":92,"def":75,"spa":92,"spd":85,"spe":60}},"rhyperior":{"name":"Rhyperior","t":["Ground","Rock"],"bs":{"hp":115,"atk":140,"def":130,"spa":55,"spd":55,"spe":40}},"leafeon":{"name":"Leafeon","t":["Grass"],"bs":{"hp":65,"atk":110,"def":130,"spa":60,"spd":65,"spe":95}},"glaceon":{"name":"Glaceon","t":["Ice"],"bs":{"hp":65,"atk":60,"def":110,"spa":130,"spd":95,"spe":65}},"gallade":{"name":"Gallade","t":["Psychic","Fighting"],"bs":{"hp":68,"atk":125,"def":65,"spa":65,"spd":115,"spe":80}},"froslass":{"name":"Froslass","t":["Ice","Ghost"],"bs":{"hp":70,"atk":80,"def":70,"spa":80,"spd":70,"spe":110}},"serperior":{"name":"Serperior","t":["Grass"],"bs":{"hp":75,"atk":75,"def":95,"spa":75,"spd":95,"spe":113}},"emboar":{"name":"Emboar","t":["Fire","Fighting"],"bs":{"hp":110,"atk":123,"def":65,"spa":100,"spd":65,"spe":65}},"samurott":{"name":"Samurott","t":["Water"],"bs":{"hp":95,"atk":100,"def":85,"spa":108,"spd":70,"spe":70}},"samurott-hisui":{"name":"Samurott-Hisui","t":["Water","Dark"],"bs":{"hp":90,"atk":108,"def":80,"spa":100,"spd":65,"spe":85}},"excadrill":{"name":"Excadrill","t":["Ground","Steel"],"bs":{"hp":110,"atk":135,"def":60,"spa":50,"spd":65,"spe":88}},"conkeldurr":{"name":"Conkeldurr","t":["Fighting"],"bs":{"hp":105,"atk":140,"def":95,"spa":55,"spd":65,"spe":45}},"krookodile":{"name":"Krookodile","t":["Ground","Dark"],"bs":{"hp":95,"atk":117,"def":80,"spa":65,"spd":70,"spe":92}},"zoroark":{"name":"Zoroark","t":["Dark"],"bs":{"hp":60,"atk":105,"def":60,"spa":120,"spd":60,"spe":105}},"zoroark-hisui":{"name":"Zoroark-Hisui","t":["Normal","Ghost"],"bs":{"hp":55,"atk":100,"def":60,"spa":125,"spd":60,"spe":110}},"reuniclus":{"name":"Reuniclus","t":["Psychic"],"bs":{"hp":110,"atk":65,"def":75,"spa":125,"spd":85,"spe":30}},"beartic":{"name":"Beartic","t":["Ice"],"bs":{"hp":95,"atk":130,"def":80,"spa":70,"spd":80,"spe":50}},"golurk":{"name":"Golurk","t":["Ground","Ghost"],"bs":{"hp":89,"atk":124,"def":80,"spa":55,"spd":80,"spe":55}},"hydreigon":{"name":"Hydreigon","t":["Dark","Dragon"],"bs":{"hp":92,"atk":105,"def":90,"spa":125,"spd":90,"spe":98}},"chesnaught":{"name":"Chesnaught","t":["Grass","Fighting"],"bs":{"hp":88,"atk":107,"def":122,"spa":74,"spd":75,"spe":64}},"diggersby":{"name":"Diggersby","t":["Normal","Ground"],"bs":{"hp":85,"atk":56,"def":77,"spa":50,"spd":77,"spe":78}},"pyroar":{"name":"Pyroar","t":["Fire","Normal"],"bs":{"hp":86,"atk":68,"def":72,"spa":109,"spd":66,"spe":106}},"pangoro":{"name":"Pangoro","t":["Fighting","Dark"],"bs":{"hp":95,"atk":124,"def":78,"spa":69,"spd":71,"spe":58}},"clawitzer":{"name":"Clawitzer","t":["Water"],"bs":{"hp":71,"atk":73,"def":88,"spa":120,"spd":89,"spe":59}},"tyrantrum":{"name":"Tyrantrum","t":["Rock","Dragon"],"bs":{"hp":82,"atk":121,"def":119,"spa":69,"spd":59,"spe":71}},"aurorus":{"name":"Aurorus","t":["Rock","Ice"],"bs":{"hp":123,"atk":77,"def":72,"spa":99,"spd":92,"spe":58}},"sylveon":{"name":"Sylveon","t":["Fairy"],"bs":{"hp":95,"atk":65,"def":65,"spa":110,"spd":130,"spe":60}},"hawlucha":{"name":"Hawlucha","t":["Fighting","Flying"],"bs":{"hp":78,"atk":92,"def":75,"spa":74,"spd":63,"spe":118}},"avalugg":{"name":"Avalugg","t":["Ice"],"bs":{"hp":95,"atk":117,"def":184,"spa":44,"spd":46,"spe":28}},"avalugg-hisui":{"name":"Avalugg-Hisui","t":["Ice","Rock"],"bs":{"hp":95,"atk":127,"def":184,"spa":34,"spd":36,"spe":38}},"noivern":{"name":"Noivern","t":["Flying","Dragon"],"bs":{"hp":85,"atk":70,"def":80,"spa":97,"spd":80,"spe":123}},"incineroar":{"name":"Incineroar","t":["Fire","Dark"],"bs":{"hp":95,"atk":115,"def":90,"spa":80,"spd":90,"spe":60}},"lycanroc":{"name":"Lycanroc","t":["Rock"],"bs":{"hp":75,"atk":115,"def":65,"spa":55,"spd":65,"spe":112}},"lycanroc-midnight":{"name":"Lycanroc-Midnight","t":["Rock"],"bs":{"hp":85,"atk":115,"def":75,"spa":55,"spd":75,"spe":82}},"lycanroc-dusk":{"name":"Lycanroc-Dusk","t":["Rock"],"bs":{"hp":75,"atk":117,"def":65,"spa":55,"spd":65,"spe":110}},"mudsdale":{"name":"Mudsdale","t":["Ground"],"bs":{"hp":100,"atk":125,"def":100,"spa":55,"spd":85,"spe":35}},"araquanid":{"name":"Araquanid","t":["Water","Bug"],"bs":{"hp":68,"atk":70,"def":92,"spa":50,"spd":132,"spe":42}},"oranguru":{"name":"Oranguru","t":["Normal","Psychic"],"bs":{"hp":90,"atk":60,"def":80,"spa":90,"spd":110,"spe":60}},"passimian":{"name":"Passimian","t":["Fighting"],"bs":{"hp":100,"atk":120,"def":90,"spa":40,"spd":60,"spe":80}},"kommoo":{"name":"Kommoo","t":["Dragon","Fighting"],"bs":{"hp":75,"atk":110,"def":125,"spa":100,"spd":105,"spe":85}},"corviknight":{"name":"Corviknight","t":["Flying","Steel"],"bs":{"hp":98,"atk":87,"def":105,"spa":53,"spd":85,"spe":67}},"sandaconda":{"name":"Sandaconda","t":["Ground"],"bs":{"hp":72,"atk":107,"def":125,"spa":65,"spd":70,"spe":71}},"grimmsnarl":{"name":"Grimmsnarl","t":["Dark","Fairy"],"bs":{"hp":95,"atk":120,"def":65,"spa":95,"spd":75,"spe":60}},"mrrime":{"name":"Mrrime","t":["Ice","Psychic"],"bs":{"hp":80,"atk":85,"def":75,"spa":110,"spd":100,"spe":70}},"falinks":{"name":"Falinks","t":["Fighting"],"bs":{"hp":65,"atk":100,"def":100,"spa":70,"spd":60,"spe":75}},"dragapult":{"name":"Dragapult","t":["Dragon","Ghost"],"bs":{"hp":88,"atk":120,"def":75,"spa":100,"spd":75,"spe":142}},"wyrdeer":{"name":"Wyrdeer","t":["Normal","Psychic"],"bs":{"hp":103,"atk":105,"def":72,"spa":105,"spd":75,"spe":65}},"skeledirge":{"name":"Skeledirge","t":["Fire","Ghost"],"bs":{"hp":104,"atk":75,"def":100,"spa":110,"spd":75,"spe":66}},"garganacl":{"name":"Garganacl","t":["Rock"],"bs":{"hp":100,"atk":100,"def":130,"spa":45,"spd":90,"spe":35}},"espathra":{"name":"Espathra","t":["Psychic"],"bs":{"hp":95,"atk":60,"def":60,"spa":101,"spd":60,"spe":105}},"palafin":{"name":"Palafin","t":["Water"],"bs":{"hp":100,"atk":70,"def":72,"spa":53,"spd":62,"spe":100}},"orthworm":{"name":"Orthworm","t":["Steel"],"bs":{"hp":70,"atk":85,"def":145,"spa":60,"spd":55,"spe":65}},"annihilape":{"name":"Annihilape","t":["Fighting","Ghost"],"bs":{"hp":110,"atk":115,"def":80,"spa":50,"spd":90,"spe":90}},"archaludon":{"name":"Archaludon","t":["Steel","Dragon"],"bs":{"hp":90,"atk":105,"def":130,"spa":125,"spd":65,"spe":85}},"hydrapple":{"name":"Hydrapple","t":["Grass","Dragon"],"bs":{"hp":106,"atk":80,"def":110,"spa":120,"spd":80,"spe":44}},"aerodactyl":{"name":"Aerodactyl","t":["Rock","Flying"],"bs":{"hp":80,"atk":105,"def":65,"spa":60,"spd":75,"spe":130}},"sharpedo":{"name":"Sharpedo","t":["Water","Dark"],"bs":{"hp":70,"atk":120,"def":40,"spa":95,"spd":40,"spe":95}},"gliscor":{"name":"Gliscor","t":["Ground","Flying"],"bs":{"hp":75,"atk":95,"def":125,"spa":45,"spd":75,"spe":95}},"stunfisk":{"name":"Stunfisk","t":["Ground","Electric"],"bs":{"hp":109,"atk":66,"def":84,"spa":81,"spd":99,"spe":32}},"stunfisk-galar":{"name":"Stunfisk-Galar","t":["Ground","Steel"],"bs":{"hp":109,"atk":81,"def":99,"spa":66,"spd":84,"spe":32}},"barbaracle":{"name":"Barbaracle","t":["Rock","Water"],"bs":{"hp":72,"atk":105,"def":115,"spa":54,"spd":86,"spe":68}},"heliolisk":{"name":"Heliolisk","t":["Electric","Normal"],"bs":{"hp":62,"atk":55,"def":52,"spa":109,"spd":94,"spe":109}},"trevenant":{"name":"Trevenant","t":["Ghost","Grass"],"bs":{"hp":85,"atk":110,"def":76,"spa":65,"spd":82,"spe":56}},"tinkaton":{"name":"Tinkaton","t":["Fairy","Steel"],"bs":{"hp":85,"atk":75,"def":77,"spa":70,"spd":105,"spe":94}},"houndstone":{"name":"Houndstone","t":["Ghost"],"bs":{"hp":72,"atk":101,"def":100,"spa":50,"spd":97,"spe":68}},"watchog":{"name":"Watchog","t":["Normal"],"bs":{"hp":60,"atk":85,"def":69,"spa":60,"spd":69,"spe":77}},"simisage":{"name":"Simisage","t":["Grass"],"bs":{"hp":75,"atk":98,"def":63,"spa":98,"spd":63,"spe":101}},"gourgeist":{"name":"Gourgeist","t":["Ghost","Grass"],"bs":{"hp":65,"atk":90,"def":122,"spa":58,"spd":75,"spe":84}},"decidueye":{"name":"Decidueye","t":["Grass","Ghost"],"bs":{"hp":78,"atk":107,"def":75,"spa":100,"spd":100,"spe":70}},"decidueye-hisui":{"name":"Decidueye-Hisui","t":["Grass","Fighting"],"bs":{"hp":88,"atk":112,"def":80,"spa":95,"spd":95,"spe":60}},"toucannon":{"name":"Toucannon","t":["Normal","Flying"],"bs":{"hp":80,"atk":120,"def":75,"spa":75,"spd":75,"spe":60}},"tsareena":{"name":"Tsareena","t":["Grass"],"bs":{"hp":72,"atk":120,"def":98,"spa":50,"spd":98,"spe":72}},"morpeko":{"name":"Morpeko","t":["Electric","Dark"],"bs":{"hp":58,"atk":95,"def":58,"spa":70,"spd":58,"spe":97}},"meowscarada":{"name":"Meowscarada","t":["Grass","Dark"],"bs":{"hp":76,"atk":110,"def":70,"spa":81,"spd":70,"spe":123}},"maushold":{"name":"Maushold","t":["Normal"],"bs":{"hp":74,"atk":75,"def":70,"spa":65,"spd":75,"spe":111}},"scovillain":{"name":"Scovillain","t":["Grass","Fire"],"bs":{"hp":65,"atk":108,"def":65,"spa":108,"spd":65,"spe":75}},"chimecho":{"name":"Chimecho","t":["Psychic"],"bs":{"hp":75,"atk":50,"def":80,"spa":95,"spd":90,"spe":65}},"lopunny":{"name":"Lopunny","t":["Normal"],"bs":{"hp":65,"atk":76,"def":84,"spa":54,"spd":96,"spe":105}},"liepard":{"name":"Liepard","t":["Dark"],"bs":{"hp":64,"atk":88,"def":50,"spa":88,"spd":50,"spe":106}},"whimsicott":{"name":"Whimsicott","t":["Grass","Fairy"],"bs":{"hp":60,"atk":67,"def":85,"spa":77,"spd":75,"spe":116}},"emolga":{"name":"Emolga","t":["Electric","Flying"],"bs":{"hp":55,"atk":75,"def":60,"spa":75,"spd":60,"spe":103}},"delphox":{"name":"Delphox","t":["Fire","Psychic"],"bs":{"hp":75,"atk":69,"def":72,"spa":114,"spd":100,"spe":104}},"floette-eternal":{"name":"Floette-Eternal","t":["Fairy"],"bs":{"hp":74,"atk":65,"def":67,"spa":125,"spd":128,"spe":92}},"florges":{"name":"Florges","t":["Fairy"],"bs":{"hp":78,"atk":65,"def":68,"spa":112,"spd":154,"spe":75}},"furfrou":{"name":"Furfrou","t":["Normal"],"bs":{"hp":75,"atk":80,"def":60,"spa":65,"spd":90,"spe":102}},"meowstic":{"name":"Meowstic","t":["Psychic"],"bs":{"hp":74,"atk":48,"def":76,"spa":83,"spd":81,"spe":104}},"meowstic-f":{"name":"Meowstic-F","t":["Psychic"],"bs":{"hp":74,"atk":48,"def":76,"spa":83,"spd":81,"spe":104}},"aromatisse":{"name":"Aromatisse","t":["Fairy"],"bs":{"hp":101,"atk":72,"def":72,"spa":99,"spd":89,"spe":29}},"dedenne":{"name":"Dedenne","t":["Electric","Fairy"],"bs":{"hp":67,"atk":58,"def":57,"spa":81,"spd":67,"spe":101}},"mimikyu":{"name":"Mimikyu","t":["Ghost","Fairy"],"bs":{"hp":55,"atk":90,"def":80,"spa":50,"spd":105,"spe":96}},"hatterene":{"name":"Hatterene","t":["Psychic","Fairy"],"bs":{"hp":57,"atk":90,"def":95,"spa":136,"spd":103,"spe":29}},"alcremie":{"name":"Alcremie","t":["Fairy"],"bs":{"hp":65,"atk":60,"def":75,"spa":110,"spd":121,"spe":64}},"scizor":{"name":"Scizor","t":["Bug","Steel"],"bs":{"hp":70,"atk":130,"def":100,"spa":55,"spd":80,"spe":65}},"skarmory":{"name":"Skarmory","t":["Steel","Flying"],"bs":{"hp":65,"atk":80,"def":140,"spa":40,"spd":70,"spe":70}},"banette":{"name":"Banette","t":["Ghost"],"bs":{"hp":64,"atk":115,"def":65,"spa":83,"spd":63,"spe":65}},"cofagrigus":{"name":"Cofagrigus","t":["Ghost"],"bs":{"hp":58,"atk":50,"def":145,"spa":95,"spd":105,"spe":30}},"chandelure":{"name":"Chandelure","t":["Ghost","Fire"],"bs":{"hp":60,"atk":55,"def":90,"spa":145,"spd":90,"spe":80}},"polteageist":{"name":"Polteageist","t":["Ghost"],"bs":{"hp":60,"atk":65,"def":65,"spa":134,"spd":114,"spe":70}},"ceruledge":{"name":"Ceruledge","t":["Fire","Ghost"],"bs":{"hp":75,"atk":125,"def":80,"spa":60,"spd":100,"spe":85}},"sinistcha":{"name":"Sinistcha","t":["Grass","Ghost"],"bs":{"hp":71,"atk":60,"def":106,"spa":121,"spd":80,"spe":70}},"beedrill":{"name":"Beedrill","t":["Bug","Poison"],"bs":{"hp":65,"atk":90,"def":40,"spa":45,"spd":80,"spe":75}},"starmie":{"name":"Starmie","t":["Water","Psychic"],"bs":{"hp":60,"atk":75,"def":85,"spa":100,"spd":85,"spe":115}},"staraptor":{"name":"Staraptor","t":["Normal","Flying"],"bs":{"hp":85,"atk":120,"def":70,"spa":50,"spd":60,"spe":100}},"talonflame":{"name":"Talonflame","t":["Fire","Flying"],"bs":{"hp":78,"atk":81,"def":71,"spa":74,"spd":69,"spe":126}},"kleavor":{"name":"Kleavor","t":["Bug","Rock"],"bs":{"hp":70,"atk":135,"def":95,"spa":45,"spd":70,"spe":85}},"basculegion":{"name":"Basculegion","t":["Water","Ghost"],"bs":{"hp":120,"atk":112,"def":65,"spa":80,"spd":75,"spe":78}},"basculegion-f":{"name":"Basculegion-F","t":["Water","Ghost"],"bs":{"hp":120,"atk":92,"def":65,"spa":100,"spd":75,"spe":78}},"pidgeot":{"name":"Pidgeot","t":["Normal","Flying"],"bs":{"hp":83,"atk":80,"def":75,"spa":70,"spd":70,"spe":101}},"weavile":{"name":"Weavile","t":["Dark","Ice"],"bs":{"hp":70,"atk":120,"def":65,"spa":45,"spd":85,"spe":125}},"rotom":{"name":"Rotom","t":["Electric","Ghost"],"bs":{"hp":50,"atk":50,"def":77,"spa":95,"spd":77,"spe":91}},"rotom-heat":{"name":"Rotom-Heat","t":["Electric","Fire"],"bs":{"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86}},"rotom-wash":{"name":"Rotom-Wash","t":["Electric","Water"],"bs":{"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86}},"rotom-frost":{"name":"Rotom-Frost","t":["Electric","Ice"],"bs":{"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86}},"rotom-fan":{"name":"Rotom-Fan","t":["Electric","Flying"],"bs":{"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86}},"rotom-mow":{"name":"Rotom-Mow","t":["Electric","Grass"],"bs":{"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86}},"simipour":{"name":"Simipour","t":["Water"],"bs":{"hp":75,"atk":98,"def":63,"spa":98,"spd":63,"spe":101}},"vanilluxe":{"name":"Vanilluxe","t":["Ice"],"bs":{"hp":71,"atk":95,"def":85,"spa":110,"spd":95,"spe":79}},"greninja":{"name":"Greninja","t":["Water","Dark"],"bs":{"hp":72,"atk":95,"def":67,"spa":103,"spd":71,"spe":122}},"vivillon":{"name":"Vivillon","t":["Bug","Flying"],"bs":{"hp":80,"atk":52,"def":50,"spa":90,"spd":50,"spe":89}},"aegislash":{"name":"Aegislash","t":["Steel","Ghost"],"bs":{"hp":60,"atk":50,"def":140,"spa":50,"spd":140,"spe":60}},"malamar":{"name":"Malamar","t":["Dark","Psychic"],"bs":{"hp":86,"atk":92,"def":88,"spa":68,"spd":75,"spe":73}},"klefki":{"name":"Klefki","t":["Steel","Fairy"],"bs":{"hp":57,"atk":80,"def":91,"spa":80,"spd":87,"spe":75}},"quaquaval":{"name":"Quaquaval","t":["Water","Fighting"],"bs":{"hp":85,"atk":120,"def":80,"spa":85,"spd":75,"spe":85}},"kingambit":{"name":"Kingambit","t":["Dark","Steel"],"bs":{"hp":100,"atk":135,"def":120,"spa":60,"spd":85,"spe":50}},"gholdengo":{"name":"Gholdengo","t":["Steel","Ghost"],"bs":{"hp":87,"atk":60,"def":95,"spa":133,"spd":91,"spe":84}},"ditto":{"name":"Ditto","t":["Normal"],"bs":{"hp":48,"atk":48,"def":48,"spa":48,"spd":48,"spe":48}},"charizard-mega-x":{"name":"Charizard-Mega-X","t":["Fire","Dragon"],"bs":{"hp":78,"atk":130,"def":111,"spa":130,"spd":85,"spe":100},"mega":true},"charizard-mega-y":{"name":"Charizard-Mega-Y","t":["Fire","Flying"],"bs":{"hp":78,"atk":104,"def":78,"spa":159,"spd":115,"spe":100},"mega":true},"blaziken-mega":{"name":"Blaziken-Mega","t":["Fire","Fighting"],"bs":{"hp":80,"atk":160,"def":80,"spa":130,"spd":80,"spe":100},"mega":true},"swampert-mega":{"name":"Swampert-Mega","t":["Water","Ground"],"bs":{"hp":100,"atk":150,"def":110,"spa":95,"spd":110,"spe":70},"mega":true},"gyarados-mega":{"name":"Gyarados-Mega","t":["Water","Dark"],"bs":{"hp":95,"atk":155,"def":109,"spa":70,"spd":130,"spe":81},"mega":true},"kangaskhan-mega":{"name":"Kangaskhan-Mega","t":["Normal"],"bs":{"hp":105,"atk":125,"def":100,"spa":60,"spd":100,"spe":100},"mega":true},"gengar-mega":{"name":"Gengar-Mega","t":["Ghost","Poison"],"bs":{"hp":60,"atk":65,"def":80,"spa":170,"spd":95,"spe":130},"mega":true},"metagross-mega":{"name":"Metagross-Mega","t":["Steel","Psychic"],"bs":{"hp":80,"atk":145,"def":150,"spa":105,"spd":110,"spe":110},"mega":true},"mawile-mega":{"name":"Mawile-Mega","t":["Steel","Fairy"],"bs":{"hp":50,"atk":105,"def":125,"spa":55,"spd":95,"spe":50},"mega":true},"camerupt-mega":{"name":"Camerupt-Mega","t":["Fire","Ground"],"bs":{"hp":70,"atk":120,"def":100,"spa":145,"spd":105,"spe":20},"mega":true},"lopunny-mega":{"name":"Lopunny-Mega","t":["Normal","Fighting"],"bs":{"hp":65,"atk":136,"def":94,"spa":54,"spd":96,"spe":135},"mega":true},"aerodactyl-mega":{"name":"Aerodactyl-Mega","t":["Rock","Flying"],"bs":{"hp":80,"atk":135,"def":85,"spa":70,"spd":95,"spe":150},"mega":true},"salamence-mega":{"name":"Salamence-Mega","t":["Dragon","Flying"],"bs":{"hp":95,"atk":145,"def":130,"spa":120,"spd":90,"spe":120},"mega":true},"tyranitar-mega":{"name":"Tyranitar-Mega","t":["Rock","Dark"],"bs":{"hp":100,"atk":164,"def":150,"spa":95,"spd":120,"spe":71},"mega":true},"venusaur-mega":{"name":"Venusaur-Mega","t":["Grass","Poison"],"bs":{"hp":80,"atk":100,"def":123,"spa":122,"spd":120,"spe":80},"mega":true},"blastoise-mega":{"name":"Blastoise-Mega","t":["Water"],"bs":{"hp":79,"atk":103,"def":120,"spa":135,"spd":115,"spe":78},"mega":true},"alakazam-mega":{"name":"Alakazam-Mega","t":["Psychic"],"bs":{"hp":55,"atk":50,"def":65,"spa":175,"spd":105,"spe":150},"mega":true},"pinsir-mega":{"name":"Pinsir-Mega","t":["Bug","Flying"],"bs":{"hp":65,"atk":155,"def":120,"spa":65,"spd":90,"spe":105},"mega":true},"gallade-mega":{"name":"Gallade-Mega","t":["Psychic","Fighting"],"bs":{"hp":68,"atk":165,"def":95,"spa":65,"spd":115,"spe":110},"mega":true},"gardevoir-mega":{"name":"Gardevoir-Mega","t":["Psychic","Fairy"],"bs":{"hp":68,"atk":85,"def":65,"spa":165,"spd":135,"spe":100},"mega":true},"scizor-mega":{"name":"Scizor-Mega","t":["Bug","Steel"],"bs":{"hp":70,"atk":150,"def":140,"spa":65,"spd":100,"spe":75},"mega":true},"sableye-mega":{"name":"Sableye-Mega","t":["Dark","Ghost"],"bs":{"hp":50,"atk":85,"def":125,"spa":85,"spd":115,"spe":20},"mega":true},"banette-mega":{"name":"Banette-Mega","t":["Ghost"],"bs":{"hp":64,"atk":165,"def":75,"spa":93,"spd":83,"spe":75},"mega":true},"absol-mega":{"name":"Absol-Mega","t":["Dark"],"bs":{"hp":65,"atk":150,"def":60,"spa":115,"spd":60,"spe":115},"mega":true},"manectric-mega":{"name":"Manectric-Mega","t":["Electric"],"bs":{"hp":70,"atk":75,"def":80,"spa":135,"spd":80,"spe":135},"mega":true},"houndoom-mega":{"name":"Houndoom-Mega","t":["Dark","Fire"],"bs":{"hp":75,"atk":90,"def":90,"spa":140,"spd":90,"spe":115},"mega":true},"abomasnow-mega":{"name":"Abomasnow-Mega","t":["Grass","Ice"],"bs":{"hp":90,"atk":132,"def":105,"spa":132,"spd":105,"spe":30},"mega":true},"garchomp-mega":{"name":"Garchomp-Mega","t":["Dragon","Ground"],"bs":{"hp":108,"atk":170,"def":115,"spa":120,"spd":95,"spe":92},"mega":true},"lucario-mega":{"name":"Lucario-Mega","t":["Fighting","Steel"],"bs":{"hp":70,"atk":145,"def":88,"spa":140,"spd":70,"spe":112},"mega":true},"latios-mega":{"name":"Latios-Mega","t":["Dragon","Psychic"],"bs":{"hp":80,"atk":130,"def":100,"spa":160,"spd":120,"spe":110},"mega":true},"latias-mega":{"name":"Latias-Mega","t":["Dragon","Psychic"],"bs":{"hp":80,"atk":100,"def":120,"spa":140,"spd":150,"spe":110},"mega":true},"diancie-mega":{"name":"Diancie-Mega","t":["Rock","Fairy"],"bs":{"hp":50,"atk":160,"def":110,"spa":160,"spd":110,"spe":110},"mega":true},"altaria-mega":{"name":"Altaria-Mega","t":["Dragon","Fairy"],"bs":{"hp":75,"atk":110,"def":110,"spa":110,"spd":105,"spe":80},"mega":true},"sharpedo-mega":{"name":"Sharpedo-Mega","t":["Water","Dark"],"bs":{"hp":70,"atk":140,"def":70,"spa":110,"spd":65,"spe":105},"mega":true},"slowbro-mega":{"name":"Slowbro-Mega","t":["Water","Psychic"],"bs":{"hp":95,"atk":75,"def":180,"spa":130,"spd":80,"spe":30},"mega":true},"steelix-mega":{"name":"Steelix-Mega","t":["Steel","Ground"],"bs":{"hp":75,"atk":125,"def":230,"spa":55,"spd":95,"spe":30},"mega":true},"glalie-mega":{"name":"Glalie-Mega","t":["Ice"],"bs":{"hp":80,"atk":120,"def":80,"spa":120,"spd":80,"spe":100},"mega":true},"pidgeot-mega":{"name":"Pidgeot-Mega","t":["Normal","Flying"],"bs":{"hp":83,"atk":80,"def":80,"spa":135,"spd":80,"spe":121},"mega":true},"beedrill-mega":{"name":"Beedrill-Mega","t":["Bug","Poison"],"bs":{"hp":65,"atk":150,"def":40,"spa":15,"spd":80,"spe":145},"mega":true},"heracross-mega":{"name":"Heracross-Mega","t":["Bug","Fighting"],"bs":{"hp":80,"atk":185,"def":115,"spa":40,"spd":105,"spe":75},"mega":true},"ampharos-mega":{"name":"Ampharos-Mega","t":["Electric","Dragon"],"bs":{"hp":90,"atk":95,"def":105,"spa":165,"spd":110,"spe":45},"mega":true},"aggron-mega":{"name":"Aggron-Mega","t":["Steel"],"bs":{"hp":70,"atk":140,"def":230,"spa":60,"spd":80,"spe":50},"mega":true},"medicham-mega":{"name":"Medicham-Mega","t":["Fighting","Psychic"],"bs":{"hp":60,"atk":100,"def":85,"spa":80,"spd":85,"spe":100},"mega":true},"sceptile-mega":{"name":"Sceptile-Mega","t":["Grass","Dragon"],"bs":{"hp":70,"atk":110,"def":75,"spa":145,"spd":85,"spe":145},"mega":true},"audino-mega":{"name":"Audino-Mega","t":["Normal","Fairy"],"bs":{"hp":103,"atk":60,"def":126,"spa":80,"spd":126,"spe":50},"mega":true},"staraptor-mega":{"name":"Staraptor-Mega","t":["Fighting","Flying"],"bs":{"hp":85,"atk":140,"def":100,"spa":60,"spd":90,"spe":110},"mega":true},"clefable-mega":{"name":"Clefable-Mega","t":["Fairy","Flying"],"bs":{"hp":95,"atk":80,"def":93,"spa":135,"spd":110,"spe":70},"mega":true},"malamar-mega":{"name":"Malamar-Mega","t":["Dark","Psychic"],"bs":{"hp":86,"atk":102,"def":88,"spa":98,"spd":120,"spe":88},"mega":true},"dragalge-mega":{"name":"Dragalge-Mega","t":["Poison","Dragon"],"bs":{"hp":65,"atk":85,"def":105,"spa":132,"spd":163,"spe":44},"mega":true},"eelektross-mega":{"name":"Eelektross-Mega","t":["Electric"],"bs":{"hp":85,"atk":145,"def":80,"spa":135,"spd":90,"spe":80},"mega":true},"scovillain-mega":{"name":"Scovillain-Mega","t":["Grass","Fire"],"bs":{"hp":65,"atk":138,"def":85,"spa":138,"spd":85,"spe":75},"mega":true},"dragonite-mega":{"name":"Dragonite-Mega","t":["Dragon","Flying"],"bs":{"hp":91,"atk":124,"def":115,"spa":145,"spd":125,"spe":100},"mega":true},"crabominable-mega":{"name":"Crabominable-Mega","t":["Fighting","Ice"],"bs":{"hp":97,"atk":157,"def":122,"spa":62,"spd":107,"spe":33},"mega":true},"pyroar-mega":{"name":"Pyroar-Mega","t":["Fire","Normal"],"bs":{"hp":86,"atk":88,"def":92,"spa":129,"spd":86,"spe":126},"mega":true},"raichu-mega-x":{"name":"Raichu-Mega-X","t":["Electric"],"bs":{"hp":60,"atk":135,"def":95,"spa":90,"spd":95,"spe":110},"mega":true},"raichu-mega-y":{"name":"Raichu-Mega-Y","t":["Electric"],"bs":{"hp":60,"atk":100,"def":55,"spa":160,"spd":80,"spe":130},"mega":true},"floette-eternal-mega":{"name":"Floette-Eternal-Mega","t":["Fairy"],"bs":{"hp":74,"atk":85,"def":87,"spa":155,"spd":148,"spe":102},"mega":true}},MOVES={"acidspray":{"n":"Acid Spray","t":"Poison","c":"Special","bp":40},"bodyslam":{"n":"Body Slam","t":"Normal","c":"Physical","bp":85},"bulldoze":{"n":"Bulldoze","t":"Ground","c":"Physical","bp":60},"bulletseed":{"n":"Bullet Seed","t":"Grass","c":"Physical","bp":25},"doubleedge":{"n":"Double-Edge","t":"Normal","c":"Physical","bp":120},"earthpower":{"n":"Earth Power","t":"Ground","c":"Special","bp":90},"earthquake":{"n":"Earthquake","t":"Ground","c":"Physical","bp":100},"energyball":{"n":"Energy Ball","t":"Grass","c":"Special","bp":90},"facade":{"n":"Facade","t":"Normal","c":"Physical","bp":70},"frenzyplant":{"n":"Frenzy Plant","t":"Grass","c":"Special","bp":150},"gigadrain":{"n":"Giga Drain","t":"Grass","c":"Special","bp":75},"gigaimpact":{"n":"Giga Impact","t":"Normal","c":"Physical","bp":150},"grassyglide":{"n":"Grassy Glide","t":"Grass","c":"Physical","bp":55},"hyperbeam":{"n":"Hyper Beam","t":"Normal","c":"Special","bp":150},"knockoff":{"n":"Knock Off","t":"Dark","c":"Physical","bp":65},"leafstorm":{"n":"Leaf Storm","t":"Grass","c":"Special","bp":130},"outrage":{"n":"Outrage","t":"Dragon","c":"Physical","bp":120},"petalblizzard":{"n":"Petal Blizzard","t":"Grass","c":"Physical","bp":90},"petaldance":{"n":"Petal Dance","t":"Grass","c":"Special","bp":120},"poisonjab":{"n":"Poison Jab","t":"Poison","c":"Physical","bp":80},"powerwhip":{"n":"Power Whip","t":"Grass","c":"Physical","bp":120},"round":{"n":"Round","t":"Normal","c":"Special","bp":60},"seedbomb":{"n":"Seed Bomb","t":"Grass","c":"Physical","bp":80},"sludgebomb":{"n":"Sludge Bomb","t":"Poison","c":"Special","bp":90},"sludgewave":{"n":"Sludge Wave","t":"Poison","c":"Special","bp":95},"snore":{"n":"Snore","t":"Normal","c":"Special","bp":50},"solarbeam":{"n":"Solar Beam","t":"Grass","c":"Special","bp":120},"stompingtantrum":{"n":"Stomping Tantrum","t":"Ground","c":"Physical","bp":75},"terrainpulse":{"n":"Terrain Pulse","t":"Normal","c":"Special","bp":50},"trailblaze":{"n":"Trailblaze","t":"Grass","c":"Physical","bp":50},"venoshock":{"n":"Venoshock","t":"Poison","c":"Special","bp":65},"weatherball":{"n":"Weather Ball","t":"Normal","c":"Special","bp":50},"acrobatics":{"n":"Acrobatics","t":"Flying","c":"Physical","bp":55},"aerialace":{"n":"Aerial Ace","t":"Flying","c":"Physical","bp":60},"aircutter":{"n":"Air Cutter","t":"Flying","c":"Special","bp":60},"airslash":{"n":"Air Slash","t":"Flying","c":"Special","bp":75},"ancientpower":{"n":"Ancient Power","t":"Rock","c":"Special","bp":60},"bite":{"n":"Bite","t":"Dark","c":"Physical","bp":60},"blastburn":{"n":"Blast Burn","t":"Fire","c":"Special","bp":150},"breakingswipe":{"n":"Breaking Swipe","t":"Dragon","c":"Physical","bp":60},"brickbreak":{"n":"Brick Break","t":"Fighting","c":"Physical","bp":75},"brutalswing":{"n":"Brutal Swing","t":"Dark","c":"Physical","bp":60},"crunch":{"n":"Crunch","t":"Dark","c":"Physical","bp":80},"dig":{"n":"Dig","t":"Ground","c":"Physical","bp":80},"dragonclaw":{"n":"Dragon Claw","t":"Dragon","c":"Physical","bp":80},"dragonpulse":{"n":"Dragon Pulse","t":"Dragon","c":"Special","bp":85},"dragonrush":{"n":"Dragon Rush","t":"Dragon","c":"Physical","bp":100},"dragontail":{"n":"Dragon Tail","t":"Dragon","c":"Physical","bp":60},"fireblast":{"n":"Fire Blast","t":"Fire","c":"Special","bp":110},"firefang":{"n":"Fire Fang","t":"Fire","c":"Physical","bp":65},"firepunch":{"n":"Fire Punch","t":"Fire","c":"Physical","bp":75},"firespin":{"n":"Fire Spin","t":"Fire","c":"Special","bp":35},"flamecharge":{"n":"Flame Charge","t":"Fire","c":"Physical","bp":50},"flamethrower":{"n":"Flamethrower","t":"Fire","c":"Special","bp":90},"flareblitz":{"n":"Flare Blitz","t":"Fire","c":"Physical","bp":120},"fly":{"n":"Fly","t":"Flying","c":"Physical","bp":90},"focusblast":{"n":"Focus Blast","t":"Fighting","c":"Special","bp":120},"focuspunch":{"n":"Focus Punch","t":"Fighting","c":"Physical","bp":150},"heatwave":{"n":"Heat Wave","t":"Fire","c":"Special","bp":95},"hurricane":{"n":"Hurricane","t":"Flying","c":"Special","bp":110},"inferno":{"n":"Inferno","t":"Fire","c":"Special","bp":100},"irontail":{"n":"Iron Tail","t":"Steel","c":"Physical","bp":100},"megakick":{"n":"Mega Kick","t":"Normal","c":"Physical","bp":120},"overheat":{"n":"Overheat","t":"Fire","c":"Special","bp":130},"rockslide":{"n":"Rock Slide","t":"Rock","c":"Physical","bp":75},"rocktomb":{"n":"Rock Tomb","t":"Rock","c":"Physical","bp":60},"scaleshot":{"n":"Scale Shot","t":"Dragon","c":"Physical","bp":25},"scorchingsands":{"n":"Scorching Sands","t":"Ground","c":"Special","bp":70},"shadowclaw":{"n":"Shadow Claw","t":"Ghost","c":"Physical","bp":70},"steelwing":{"n":"Steel Wing","t":"Steel","c":"Physical","bp":70},"temperflare":{"n":"Temper Flare","t":"Fire","c":"Physical","bp":75},"thunderpunch":{"n":"Thunder Punch","t":"Electric","c":"Physical","bp":75},"aquajet":{"n":"Aqua Jet","t":"Water","c":"Physical","bp":40},"aquatail":{"n":"Aqua Tail","t":"Water","c":"Physical","bp":90},"aurasphere":{"n":"Aura Sphere","t":"Fighting","c":"Special","bp":80},"avalanche":{"n":"Avalanche","t":"Ice","c":"Physical","bp":60},"blizzard":{"n":"Blizzard","t":"Ice","c":"Special","bp":110},"bodypress":{"n":"Body Press","t":"Fighting","c":"Physical","bp":80},"chillingwater":{"n":"Chilling Water","t":"Water","c":"Special","bp":50},"darkpulse":{"n":"Dark Pulse","t":"Dark","c":"Special","bp":80},"dive":{"n":"Dive","t":"Water","c":"Physical","bp":80},"fakeout":{"n":"Fake Out","t":"Normal","c":"Physical","bp":40},"flashcannon":{"n":"Flash Cannon","t":"Steel","c":"Special","bp":80},"flipturn":{"n":"Flip Turn","t":"Water","c":"Physical","bp":60},"hydrocannon":{"n":"Hydro Cannon","t":"Water","c":"Special","bp":150},"hydropump":{"n":"Hydro Pump","t":"Water","c":"Special","bp":110},"icebeam":{"n":"Ice Beam","t":"Ice","c":"Special","bp":90},"icepunch":{"n":"Ice Punch","t":"Ice","c":"Physical","bp":75},"icespinner":{"n":"Ice Spinner","t":"Ice","c":"Physical","bp":80},"icywind":{"n":"Icy Wind","t":"Ice","c":"Special","bp":55},"ironhead":{"n":"Iron Head","t":"Steel","c":"Physical","bp":80},"liquidation":{"n":"Liquidation","t":"Water","c":"Physical","bp":85},"muddywater":{"n":"Muddy Water","t":"Water","c":"Special","bp":90},"mudshot":{"n":"Mud Shot","t":"Ground","c":"Special","bp":55},"rapidspin":{"n":"Rapid Spin","t":"Normal","c":"Physical","bp":50},"smackdown":{"n":"Smack Down","t":"Rock","c":"Physical","bp":50},"surf":{"n":"Surf","t":"Water","c":"Special","bp":90},"waterfall":{"n":"Waterfall","t":"Water","c":"Physical","bp":80},"waterpulse":{"n":"Water Pulse","t":"Water","c":"Special","bp":60},"waterspout":{"n":"Water Spout","t":"Water","c":"Special","bp":150},"wavecrash":{"n":"Wave Crash","t":"Water","c":"Physical","bp":120},"whirlpool":{"n":"Whirlpool","t":"Water","c":"Special","bp":35},"zenheadbutt":{"n":"Zen Headbutt","t":"Psychic","c":"Physical","bp":80},"assurance":{"n":"Assurance","t":"Dark","c":"Physical","bp":60},"bugbite":{"n":"Bug Bite","t":"Bug","c":"Physical","bp":60},"bugbuzz":{"n":"Bug Buzz","t":"Bug","c":"Special","bp":90},"crosspoison":{"n":"Cross Poison","t":"Poison","c":"Physical","bp":70},"doublehit":{"n":"Double Hit","t":"Normal","c":"Physical","bp":35},"drillrun":{"n":"Drill Run","t":"Ground","c":"Physical","bp":80},"dualwingbeat":{"n":"Dual Wingbeat","t":"Flying","c":"Physical","bp":40},"electroweb":{"n":"Electroweb","t":"Electric","c":"Special","bp":55},"fellstinger":{"n":"Fell Stinger","t":"Bug","c":"Physical","bp":50},"lunge":{"n":"Lunge","t":"Bug","c":"Physical","bp":80},"payback":{"n":"Payback","t":"Dark","c":"Physical","bp":50},"pinmissile":{"n":"Pin Missile","t":"Bug","c":"Physical","bp":25},"pollenpuff":{"n":"Pollen Puff","t":"Bug","c":"Special","bp":90},"pounce":{"n":"Pounce","t":"Bug","c":"Physical","bp":50},"skittersmack":{"n":"Skitter Smack","t":"Bug","c":"Physical","bp":70},"thief":{"n":"Thief","t":"Dark","c":"Physical","bp":60},"throatchop":{"n":"Throat Chop","t":"Dark","c":"Physical","bp":80},"uturn":{"n":"U-turn","t":"Bug","c":"Physical","bp":70},"xscissor":{"n":"X-Scissor","t":"Bug","c":"Physical","bp":80},"bravebird":{"n":"Brave Bird","t":"Flying","c":"Physical","bp":120},"quickattack":{"n":"Quick Attack","t":"Normal","c":"Physical","bp":40},"skyattack":{"n":"Sky Attack","t":"Flying","c":"Physical","bp":140},"uproar":{"n":"Uproar","t":"Normal","c":"Special","bp":90},"belch":{"n":"Belch","t":"Poison","c":"Special","bp":120},"gunkshot":{"n":"Gunk Shot","t":"Poison","c":"Physical","bp":120},"icefang":{"n":"Ice Fang","t":"Ice","c":"Physical","bp":65},"lashout":{"n":"Lash Out","t":"Dark","c":"Physical","bp":75},"leechlife":{"n":"Leech Life","t":"Bug","c":"Physical","bp":80},"mudslap":{"n":"Mud-Slap","t":"Ground","c":"Special","bp":20},"poisonfang":{"n":"Poison Fang","t":"Poison","c":"Physical","bp":50},"psychicfangs":{"n":"Psychic Fangs","t":"Psychic","c":"Physical","bp":85},"snarl":{"n":"Snarl","t":"Dark","c":"Special","bp":55},"suckerpunch":{"n":"Sucker Punch","t":"Dark","c":"Physical","bp":70},"thunderfang":{"n":"Thunder Fang","t":"Electric","c":"Physical","bp":65},"wrap":{"n":"Wrap","t":"Normal","c":"Physical","bp":15},"alluringvoice":{"n":"Alluring Voice","t":"Fairy","c":"Special","bp":80},"chargebeam":{"n":"Charge Beam","t":"Electric","c":"Special","bp":50},"discharge":{"n":"Discharge","t":"Electric","c":"Special","bp":80},"drainingkiss":{"n":"Draining Kiss","t":"Fairy","c":"Special","bp":50},"feint":{"n":"Feint","t":"Normal","c":"Physical","bp":30},"nuzzle":{"n":"Nuzzle","t":"Electric","c":"Physical","bp":20},"playrough":{"n":"Play Rough","t":"Fairy","c":"Physical","bp":90},"risingvoltage":{"n":"Rising Voltage","t":"Electric","c":"Special","bp":70},"thunder":{"n":"Thunder","t":"Electric","c":"Special","bp":110},"thunderbolt":{"n":"Thunderbolt","t":"Electric","c":"Special","bp":90},"upperhand":{"n":"Upper Hand","t":"Fighting","c":"Physical","bp":65},"voltswitch":{"n":"Volt Switch","t":"Electric","c":"Special","bp":70},"volttackle":{"n":"Volt Tackle","t":"Electric","c":"Physical","bp":120},"wildcharge":{"n":"Wild Charge","t":"Electric","c":"Physical","bp":90},"zapcannon":{"n":"Zap Cannon","t":"Electric","c":"Special","bp":120},"dazzlinggleam":{"n":"Dazzling Gleam","t":"Fairy","c":"Special","bp":80},"drainpunch":{"n":"Drain Punch","t":"Fighting","c":"Physical","bp":75},"expandingforce":{"n":"Expanding Force","t":"Psychic","c":"Special","bp":80},"psychic":{"n":"Psychic","t":"Psychic","c":"Special","bp":90},"psychicnoise":{"n":"Psychic Noise","t":"Psychic","c":"Special","bp":75},"psyshock":{"n":"Psyshock","t":"Psychic","c":"Special","bp":80},"storedpower":{"n":"Stored Power","t":"Psychic","c":"Special","bp":20},"bounce":{"n":"Bounce","t":"Flying","c":"Physical","bp":85},"futuresight":{"n":"Future Sight","t":"Psychic","c":"Special","bp":120},"hypervoice":{"n":"Hyper Voice","t":"Normal","c":"Special","bp":90},"meteorbeam":{"n":"Meteor Beam","t":"Rock","c":"Special","bp":120},"meteormash":{"n":"Meteor Mash","t":"Steel","c":"Physical","bp":90},"mistyexplosion":{"n":"Misty Explosion","t":"Fairy","c":"Special","bp":100},"moonblast":{"n":"Moonblast","t":"Fairy","c":"Special","bp":95},"mysticalfire":{"n":"Mystical Fire","t":"Fire","c":"Special","bp":75},"shadowball":{"n":"Shadow Ball","t":"Ghost","c":"Special","bp":80},"triattack":{"n":"Tri Attack","t":"Normal","c":"Special","bp":80},"burningjealousy":{"n":"Burning Jealousy","t":"Fire","c":"Special","bp":70},"extrasensory":{"n":"Extrasensory","t":"Psychic","c":"Special","bp":80},"foulplay":{"n":"Foul Play","t":"Dark","c":"Physical","bp":95},"hex":{"n":"Hex","t":"Ghost","c":"Special","bp":65},"tailslap":{"n":"Tail Slap","t":"Normal","c":"Physical","bp":25},"freezedry":{"n":"Freeze-Dry","t":"Ice","c":"Special","bp":70},"iceshard":{"n":"Ice Shard","t":"Ice","c":"Physical","bp":40},"iciclespear":{"n":"Icicle Spear","t":"Ice","c":"Physical","bp":25},"tripleaxel":{"n":"Triple Axel","t":"Ice","c":"Physical","bp":20},"solarblade":{"n":"Solar Blade","t":"Grass","c":"Physical","bp":125},"burnup":{"n":"Burn Up","t":"Fire","c":"Special","bp":130},"closecombat":{"n":"Close Combat","t":"Fighting","c":"Physical","bp":120},"covet":{"n":"Covet","t":"Normal","c":"Physical","bp":60},"extremespeed":{"n":"Extreme Speed","t":"Normal","c":"Physical","bp":80},"ragingfury":{"n":"Raging Fury","t":"Fire","c":"Physical","bp":120},"thrash":{"n":"Thrash","t":"Normal","c":"Physical","bp":120},"headsmash":{"n":"Head Smash","t":"Rock","c":"Physical","bp":150},"powergem":{"n":"Power Gem","t":"Rock","c":"Special","bp":80},"rockblast":{"n":"Rock Blast","t":"Rock","c":"Physical","bp":25},"smartstrike":{"n":"Smart Strike","t":"Steel","c":"Physical","bp":70},"stoneedge":{"n":"Stone Edge","t":"Rock","c":"Physical","bp":100},"psychocut":{"n":"Psycho Cut","t":"Psychic","c":"Physical","bp":70},"bulletpunch":{"n":"Bullet Punch","t":"Steel","c":"Physical","bp":40},"crosschop":{"n":"Cross Chop","t":"Fighting","c":"Physical","bp":100},"darkestlariat":{"n":"Darkest Lariat","t":"Dark","c":"Physical","bp":85},"dynamicpunch":{"n":"Dynamic Punch","t":"Fighting","c":"Physical","bp":100},"highhorsepower":{"n":"High Horsepower","t":"Ground","c":"Physical","bp":95},"lowsweep":{"n":"Low Sweep","t":"Fighting","c":"Physical","bp":65},"stormthrow":{"n":"Storm Throw","t":"Fighting","c":"Physical","bp":60},"superpower":{"n":"Superpower","t":"Fighting","c":"Physical","bp":120},"clearsmog":{"n":"Clear Smog","t":"Poison","c":"Special","bp":50},"leafblade":{"n":"Leaf Blade","t":"Grass","c":"Physical","bp":90},"razorshell":{"n":"Razor Shell","t":"Water","c":"Physical","bp":75},"scald":{"n":"Scald","t":"Water","c":"Special","bp":80},"shellsidearm":{"n":"Shell Side Arm","t":"Poison","c":"Special","bp":90},"phantomforce":{"n":"Phantom Force","t":"Ghost","c":"Physical","bp":90},"poltergeist":{"n":"Poltergeist","t":"Ghost","c":"Physical","bp":110},"selfdestruct":{"n":"Self-Destruct","t":"Normal","c":"Physical","bp":200},"shadowpunch":{"n":"Shadow Punch","t":"Ghost","c":"Physical","bp":60},"circlethrow":{"n":"Circle Throw","t":"Fighting","c":"Physical","bp":60},"hammerarm":{"n":"Hammer Arm","t":"Fighting","c":"Physical","bp":100},"lastresort":{"n":"Last Resort","t":"Normal","c":"Physical","bp":140},"bind":{"n":"Bind","t":"Normal","c":"Physical","bp":15},"megahorn":{"n":"Megahorn","t":"Bug","c":"Physical","bp":120},"ragingbull":{"n":"Raging Bull","t":"Normal","c":"Physical","bp":90},"lavaplume":{"n":"Lava Plume","t":"Fire","c":"Special","bp":80},"supercellslam":{"n":"Supercell Slam","t":"Electric","c":"Physical","bp":100},"dracometeor":{"n":"Draco Meteor","t":"Dragon","c":"Special","bp":130},"eruption":{"n":"Eruption","t":"Fire","c":"Special","bp":150},"infernalparade":{"n":"Infernal Parade","t":"Ghost","c":"Special","bp":60},"firstimpression":{"n":"First Impression","t":"Bug","c":"Physical","bp":90},"infestation":{"n":"Infestation","t":"Bug","c":"Special","bp":20},"nightslash":{"n":"Night Slash","t":"Dark","c":"Physical","bp":70},"shadowsneak":{"n":"Shadow Sneak","t":"Ghost","c":"Physical","bp":40},"strugglebug":{"n":"Struggle Bug","t":"Bug","c":"Special","bp":50},"paraboliccharge":{"n":"Parabolic Charge","t":"Electric","c":"Special","bp":65},"pound":{"n":"Pound","t":"Normal","c":"Physical","bp":40},"eeriespell":{"n":"Eerie Spell","t":"Psychic","c":"Special","bp":80},"explosion":{"n":"Explosion","t":"Normal","c":"Physical","bp":250},"sandtomb":{"n":"Sand Tomb","t":"Ground","c":"Physical","bp":35},"steelbeam":{"n":"Steel Beam","t":"Steel","c":"Special","bp":140},"steelroller":{"n":"Steel Roller","t":"Steel","c":"Physical","bp":130},"barbbarrage":{"n":"Barb Barrage","t":"Poison","c":"Physical","bp":60},"vacuumwave":{"n":"Vacuum Wave","t":"Fighting","c":"Special","bp":40},"drillpeck":{"n":"Drill Peck","t":"Flying","c":"Physical","bp":80},"blazekick":{"n":"Blaze Kick","t":"Fire","c":"Physical","bp":85},"crushclaw":{"n":"Crush Claw","t":"Normal","c":"Physical","bp":75},"highjumpkick":{"n":"High Jump Kick","t":"Fighting","c":"Physical","bp":130},"axekick":{"n":"Axe Kick","t":"Fighting","c":"Physical","bp":120},"pluck":{"n":"Pluck","t":"Flying","c":"Physical","bp":60},"boomburst":{"n":"Boomburst","t":"Normal","c":"Special","bp":140},"frostbreath":{"n":"Frost Breath","t":"Ice","c":"Special","bp":60},"iciclecrash":{"n":"Icicle Crash","t":"Ice","c":"Physical","bp":85},"headlongrush":{"n":"Headlong Rush","t":"Ground","c":"Physical","bp":120},"woodhammer":{"n":"Wood Hammer","t":"Grass","c":"Physical","bp":120},"machpunch":{"n":"Mach Punch","t":"Fighting","c":"Physical","bp":40},"powertrip":{"n":"Power Trip","t":"Dark","c":"Physical","bp":20},"bonerush":{"n":"Bone Rush","t":"Ground","c":"Physical","bp":25},"icehammer":{"n":"Ice Hammer","t":"Ice","c":"Physical","bp":100},"rockwrecker":{"n":"Rock Wrecker","t":"Rock","c":"Physical","bp":150},"crabhammer":{"n":"Crabhammer","t":"Water","c":"Physical","bp":100},"aquacutter":{"n":"Aqua Cutter","t":"Water","c":"Physical","bp":70},"sacredsword":{"n":"Sacred Sword","t":"Fighting","c":"Physical","bp":90},"ceaselessedge":{"n":"Ceaseless Edge","t":"Dark","c":"Physical","bp":65},"nightdaze":{"n":"Night Daze","t":"Dark","c":"Special","bp":85},"bittermalice":{"n":"Bitter Malice","t":"Ghost","c":"Special","bp":75},"snaptrap":{"n":"Snap Trap","t":"Steel","c":"Physical","bp":35},"fierydance":{"n":"Fiery Dance","t":"Fire","c":"Special","bp":80},"watershuriken":{"n":"Water Shuriken","t":"Water","c":"Special","bp":15},"lightofruin":{"n":"Light of Ruin","t":"Fairy","c":"Special","bp":140},"flyingpress":{"n":"Flying Press","t":"Fighting","c":"Physical","bp":100},"hornleech":{"n":"Horn Leech","t":"Grass","c":"Physical","bp":75},"mountaingale":{"n":"Mountain Gale","t":"Ice","c":"Physical","bp":100},"spiritshackle":{"n":"Spirit Shackle","t":"Ghost","c":"Physical","bp":80},"triplearrows":{"n":"Triple Arrows","t":"Fighting","c":"Physical","bp":90},"sparklingaria":{"n":"Sparkling Aria","t":"Water","c":"Special","bp":90},"beakblast":{"n":"Beak Blast","t":"Flying","c":"Physical","bp":100},"accelerock":{"n":"Accelerock","t":"Rock","c":"Physical","bp":40},"firelash":{"n":"Fire Lash","t":"Fire","c":"Physical","bp":80},"tropkick":{"n":"Trop Kick","t":"Grass","c":"Physical","bp":70},"clangingscales":{"n":"Clanging Scales","t":"Dragon","c":"Special","bp":110},"gravapple":{"n":"Grav Apple","t":"Grass","c":"Physical","bp":80},"appleacid":{"n":"Apple Acid","t":"Grass","c":"Special","bp":80},"spiritbreak":{"n":"Spirit Break","t":"Fairy","c":"Physical","bp":75},"aurawheel":{"n":"Aura Wheel","t":"Electric","c":"Physical","bp":110},"dragondarts":{"n":"Dragon Darts","t":"Dragon","c":"Physical","bp":50},"psyshieldbash":{"n":"Psyshield Bash","t":"Psychic","c":"Physical","bp":70},"stoneaxe":{"n":"Stone Axe","t":"Rock","c":"Physical","bp":65},"lastrespects":{"n":"Last Respects","t":"Ghost","c":"Physical","bp":50},"direclaw":{"n":"Dire Claw","t":"Poison","c":"Physical","bp":80},"flowertrick":{"n":"Flower Trick","t":"Grass","c":"Physical","bp":70},"torchsong":{"n":"Torch Song","t":"Fire","c":"Special","bp":80},"aquastep":{"n":"Aqua Step","t":"Water","c":"Physical","bp":80},"populationbomb":{"n":"Population Bomb","t":"Normal","c":"Physical","bp":20},"saltcure":{"n":"Salt Cure","t":"Rock","c":"Physical","bp":40},"armorcannon":{"n":"Armor Cannon","t":"Fire","c":"Special","bp":120},"bitterblade":{"n":"Bitter Blade","t":"Fire","c":"Physical","bp":90},"luminacrash":{"n":"Lumina Crash","t":"Psychic","c":"Special","bp":80},"gigatonhammer":{"n":"Gigaton Hammer","t":"Steel","c":"Physical","bp":160},"jetpunch":{"n":"Jet Punch","t":"Water","c":"Physical","bp":60},"mortalspin":{"n":"Mortal Spin","t":"Poison","c":"Physical","bp":30},"ragefist":{"n":"Rage Fist","t":"Ghost","c":"Physical","bp":50},"twinbeam":{"n":"Twin Beam","t":"Psychic","c":"Special","bp":40},"kowtowcleave":{"n":"Kowtow Cleave","t":"Dark","c":"Physical","bp":85},"makeitrain":{"n":"Make It Rain","t":"Steel","c":"Special","bp":120},"matchagotcha":{"n":"Matcha Gotcha","t":"Grass","c":"Special","bp":80},"electroshot":{"n":"Electro Shot","t":"Electric","c":"Special","bp":130},"ficklebeam":{"n":"Fickle Beam","t":"Dragon","c":"Special","bp":80},"syrupbomb":{"n":"Syrup Bomb","t":"Grass","c":"Special","bp":60}},C={"Normal":{"Normal":1,"Fire":1,"Water":1,"Electric":1,"Grass":1,"Ice":1,"Fighting":1,"Poison":1,"Ground":1,"Flying":1,"Psychic":1,"Bug":1,"Rock":0.5,"Ghost":0,"Dragon":1,"Dark":1,"Steel":0.5,"Fairy":1},"Fire":{"Normal":1,"Fire":0.5,"Water":0.5,"Electric":1,"Grass":2,"Ice":2,"Fighting":1,"Poison":1,"Ground":1,"Flying":1,"Psychic":1,"Bug":2,"Rock":0.5,"Ghost":1,"Dragon":0.5,"Dark":1,"Steel":2,"Fairy":1},"Water":{"Normal":1,"Fire":2,"Water":0.5,"Electric":1,"Grass":0.5,"Ice":1,"Fighting":1,"Poison":1,"Ground":2,"Flying":1,"Psychic":1,"Bug":1,"Rock":2,"Ghost":1,"Dragon":0.5,"Dark":1,"Steel":1,"Fairy":1},"Electric":{"Normal":1,"Fire":1,"Water":2,"Electric":0.5,"Grass":0.5,"Ice":1,"Fighting":1,"Poison":1,"Ground":0,"Flying":2,"Psychic":1,"Bug":1,"Rock":1,"Ghost":1,"Dragon":0.5,"Dark":1,"Steel":1,"Fairy":1},"Grass":{"Normal":1,"Fire":0.5,"Water":2,"Electric":1,"Grass":0.5,"Ice":1,"Fighting":1,"Poison":0.5,"Ground":2,"Flying":0.5,"Psychic":1,"Bug":0.5,"Rock":2,"Ghost":1,"Dragon":0.5,"Dark":1,"Steel":0.5,"Fairy":1},"Ice":{"Normal":1,"Fire":0.5,"Water":0.5,"Electric":1,"Grass":2,"Ice":0.5,"Fighting":1,"Poison":1,"Ground":2,"Flying":2,"Psychic":1,"Bug":1,"Rock":1,"Ghost":1,"Dragon":2,"Dark":1,"Steel":0.5,"Fairy":1},"Fighting":{"Normal":2,"Fire":1,"Water":1,"Electric":1,"Grass":1,"Ice":2,"Fighting":1,"Poison":0.5,"Ground":1,"Flying":0.5,"Psychic":0.5,"Bug":0.5,"Rock":2,"Ghost":0,"Dragon":1,"Dark":2,"Steel":2,"Fairy":0.5},"Poison":{"Normal":1,"Fire":1,"Water":1,"Electric":1,"Grass":2,"Ice":1,"Fighting":1,"Poison":0.5,"Ground":0.5,"Flying":1,"Psychic":1,"Bug":1,"Rock":0.5,"Ghost":0.5,"Dragon":1,"Dark":1,"Steel":0,"Fairy":2},"Ground":{"Normal":1,"Fire":2,"Water":1,"Electric":2,"Grass":0.5,"Ice":1,"Fighting":1,"Poison":2,"Ground":1,"Flying":0,"Psychic":1,"Bug":0.5,"Rock":2,"Ghost":1,"Dragon":1,"Dark":1,"Steel":2,"Fairy":1},"Flying":{"Normal":1,"Fire":1,"Water":1,"Electric":0.5,"Grass":2,"Ice":1,"Fighting":2,"Poison":1,"Ground":1,"Flying":1,"Psychic":1,"Bug":2,"Rock":0.5,"Ghost":1,"Dragon":1,"Dark":1,"Steel":0.5,"Fairy":1},"Psychic":{"Normal":1,"Fire":1,"Water":1,"Electric":1,"Grass":1,"Ice":1,"Fighting":2,"Poison":2,"Ground":1,"Flying":1,"Psychic":0.5,"Bug":1,"Rock":1,"Ghost":1,"Dragon":1,"Dark":0,"Steel":0.5,"Fairy":1},"Bug":{"Normal":1,"Fire":0.5,"Water":1,"Electric":1,"Grass":2,"Ice":1,"Fighting":0.5,"Poison":0.5,"Ground":1,"Flying":0.5,"Psychic":2,"Bug":1,"Rock":1,"Ghost":0.5,"Dragon":1,"Dark":2,"Steel":0.5,"Fairy":0.5},"Rock":{"Normal":1,"Fire":2,"Water":1,"Electric":1,"Grass":1,"Ice":2,"Fighting":0.5,"Poison":1,"Ground":0.5,"Flying":2,"Psychic":1,"Bug":2,"Rock":1,"Ghost":1,"Dragon":1,"Dark":1,"Steel":0.5,"Fairy":1},"Ghost":{"Normal":0,"Fire":1,"Water":1,"Electric":1,"Grass":1,"Ice":1,"Fighting":1,"Poison":1,"Ground":1,"Flying":1,"Psychic":2,"Bug":1,"Rock":1,"Ghost":2,"Dragon":1,"Dark":0.5,"Steel":1,"Fairy":1},"Dragon":{"Normal":1,"Fire":1,"Water":1,"Electric":1,"Grass":1,"Ice":1,"Fighting":1,"Poison":1,"Ground":1,"Flying":1,"Psychic":1,"Bug":1,"Rock":1,"Ghost":1,"Dragon":2,"Dark":1,"Steel":0.5,"Fairy":0},"Dark":{"Normal":1,"Fire":1,"Water":1,"Electric":1,"Grass":1,"Ice":1,"Fighting":0.5,"Poison":1,"Ground":1,"Flying":1,"Psychic":2,"Bug":1,"Rock":1,"Ghost":2,"Dragon":1,"Dark":0.5,"Steel":1,"Fairy":0.5},"Steel":{"Normal":1,"Fire":0.5,"Water":0.5,"Electric":0.5,"Grass":1,"Ice":2,"Fighting":1,"Poison":1,"Ground":1,"Flying":1,"Psychic":1,"Bug":1,"Rock":2,"Ghost":1,"Dragon":1,"Dark":1,"Steel":0.5,"Fairy":2},"Fairy":{"Normal":1,"Fire":0.5,"Water":1,"Electric":1,"Grass":1,"Ice":1,"Fighting":2,"Poison":0.5,"Ground":1,"Flying":1,"Psychic":1,"Bug":1,"Rock":1,"Ghost":1,"Dragon":2,"Dark":2,"Steel":0.5,"Fairy":1}};
+const byName = {}; for (const m of Object.values(MONS)) byName[m.name.toLowerCase()] = m;
+const mvByName = {}; for (const k in MOVES) mvByName[MOVES[k].n.toLowerCase()] = MOVES[k];
+
+// ---- validated math ----
+const pokeRound = x => (x % 1 > 0.5) ? Math.ceil(x) : Math.floor(x);
+const statL50 = (b, sp, n) => Math.floor((Math.floor((2*b+31)*50/100)+5+(+sp)) * n);
+const hpL50   = (b, sp)    => Math.floor((2*b+31)*50/100)+50+10+(+sp);
+const eff = (mt, dt) => dt.reduce((e,t)=> e * C[mt][t], 1);
+
+// ---- aux tables ----
+const NAT = { // nature -> [boostStat, dropStat]
+  adamant:['atk','spa'], jolly:['spe','spa'], modest:['spa','atk'], timid:['spe','atk'],
+  bold:['def','atk'], calm:['spd','atk'], careful:['spd','spa'], impish:['def','spa'],
+  relaxed:['def','spe'], sassy:['spd','spe'], quiet:['spa','spe'], brave:['atk','spe'],
+  naive:['spe','spd'], hasty:['spe','def'], lonely:['atk','def'], mild:['spa','def'],
+  rash:['spa','spd'], gentle:['spd','def'], hardy:[], docile:[], serious:[], bashful:[], quirky:[]
+};
+const natMul = (nat, stat) => { const n=NAT[(nat||'').toLowerCase()]||[]; if(n[0]===stat)return 1.1; if(n[1]===stat)return 0.9; return 1; };
+
+const PRIORITY = { 'fake out':3,'first impression':2,'aqua jet':1,'bullet punch':1,'sucker punch':1,
+  'shadow sneak':1,'extreme speed':2,'quick attack':1,'ice shard':1,'mach punch':1,'vacuum wave':1,
+  'grassy glide':1,'jet punch':1,'thunderclap':1,'accelerock':1 };
+const SPREAD = new Set(['rock slide','heat wave','hyper voice','earthquake','water spout','eruption',
+  'discharge','dazzling gleam','blizzard','muddy water','make it rain','snarl','icy wind','electroweb',
+  'bulldoze','glacial lance','sludge wave','lava plume','surf','breaking swipe','struggle bug','parabolic charge']);
+const WEATHER_SETTER = { drizzle:'rain', 'sand stream':'sand', drought:'sun', 'snow warning':'snow',
+  'orichalcum pulse':'sun' };
+const SPEED_ABIL = { 'swift swim':'rain', chlorophyll:'sun', 'sand rush':'sand', 'slush rush':'snow' };
+// items
+const TYPEBOOST = { 'mystic water':'Water','charcoal':'Fire','magnet':'Electric','miracle seed':'Grass',
+  'never-melt ice':'Ice','black belt':'Fighting','poison barb':'Poison','soft sand':'Ground',
+  'sharp beak':'Flying','twisted spoon':'Psychic','silver powder':'Bug','hard stone':'Rock',
+  'spell tag':'Ghost','dragon fang':'Dragon','black glasses':'Dark','metal coat':'Steel','fairy feather':'Fairy',
+  'sea incense':'Water','odd incense':'Psychic','rock incense':'Rock','wave incense':'Water' };
+// ---- full field / terrain / ability / item modifier tables ----
+const TERRAIN_BOOST={electric:'Electric',grassy:'Grass',psychic:'Psychic'};
+const TERRAIN_SETTER={'electric surge':'electric','grassy surge':'grassy','psychic surge':'psychic','misty surge':'misty'};
+const SOUND=new Set(['hyper voice','boomburst','overdrive','snarl','bug buzz','disarming voice','sparkling aria','clanging scales','echoed voice','round','relic song','uproar','clangorous soul','torch song','alluring voice','psychic noise']);
+const PUNCH=new Set(['ice punch','fire punch','thunder punch','drain punch','mach punch','bullet punch','close combat','power-up punch','sucker punch','shadow punch','dizzy punch','comet punch','dynamic punch','focus punch','hammer arm','meteor mash','plasma fists','rage fist','jet punch','double iron bash']);
+const SLICING=new Set(['leaf blade','sacred sword','psycho cut','night slash','x-scissor','cross poison','air slash','slash','fury cutter','solar blade','bitter blade','ceaseless edge','stone axe','population bomb','aqua cutter','kowtow cleave','razor shell','behemoth blade','aerial ace']);
+const CONTACT_EXCLUDE=new Set(['earthquake','rock slide','heat wave','hyper voice','flamethrower','thunderbolt','ice beam','surf','water spout','eruption','make it rain','shadow ball','dazzling gleam','moonblast','draco meteor','electro shot','sludge bomb','dark pulse','aura sphere','air slash','discharge','bug buzz','snarl','muddy water','earth power','power gem','energy ball','giga drain','scald','hydro pump','weather ball','last respects','matcha gotcha','pollen puff']);
+// setup moves -> approximate post-setup offense multiplier (for snowball valuation)
+const SETUP={'swords dance':2,'nasty plot':2,'calm mind':2,'shell smash':2,'belly drum':2.5,'victory dance':2,'geomancy':2,
+  'dragon dance':1.5,'quiver dance':1.5,'bulk up':1.5,'coil':1.5,'work up':1.5,'clangorous soul':1.5,'no retreat':1.5,
+  'tidy up':1.5,'take heart':1.5,'howl':1.4,'hone claws':1.4,'growth':1.5};
+// moves NEVER to auto-pick for a synthesized set (recharge / charge / self-KO gimmicks nobody runs)
+const BAD_AUTO=new Set(['hyper beam','giga impact','blast burn','hydro cannon','frenzy plant','roar of time','rock wrecker','prismatic laser','eternabeam','meteor assault','self-destruct','selfdestruct','explosion','misty explosion','solar beam','solar blade','sky attack','skull bash','razor wind','freeze shock','ice burn','bounce','fly','dig','dive','phantom force','shadow force','hyperspace hole','synchronoise']);
+function airborne(m){ return m.types.includes('Flying')||m.ability==='levitate'||m.item==='air balloon'; }
+function grounded(m,ctx){ if(ctx&&ctx.gravity)return true; return !airborne(m); }
+// type-immunity abilities: moveType -> ability that grants immunity
+const IMMUNE_ABIL={ Ground:['levitate','earth eater'], Electric:['volt absorb','lightning rod','motor drive'], Water:['water absorb','storm drain','dry skin'], Fire:['flash fire','well-baked body'], Grass:['sap sipper'] };
+
+// ---- parse a pokepaste block into a set ----
+function toKey(name){
+  let n=(name||'').toLowerCase().trim().replace(/[’'.]/g,'').replace(/\s+/g,'-');
+  n=n.replace(/-mega(-[xy])?$/,'').replace(/-gmax$/,'');
+  const alias={'floette':'floette-eternal'};
+  return alias[n]||n;
+}
+function findMon(name){
+  const k=toKey(name); if(MONS[k])return {key:k,mon:MONS[k]};
+  const lc=(name||'').toLowerCase().replace(/-mega(-[xy])?$/,'').trim();
+  if(byName[lc])return {key:lc.replace(/\s+/g,'-'),mon:byName[lc]};
+  const base=lc.split(/[- ]/)[0]; if(byName[base])return {key:base,mon:byName[base]};
+  return null;
+}
+function parsePaste(text){
+  const sets=[];
+  for(const block of text.split(/\n\s*\n/)){
+    const lines=block.trim().split('\n').map(l=>l.trim()).filter(Boolean);
+    if(!lines.length)continue;
+    let head=lines[0]; if(/^(===|\[)/.test(head))continue;
+    let item=null; const at=head.split(' @ '); if(at.length>1){item=at[1].trim();}
+    let namePart=at[0].trim();
+    const par=namePart.match(/\(([^)]+)\)\s*$/);
+    let species=namePart;
+    if(par && !['M','F'].includes(par[1])) species=par[1];
+    species=species.replace(/\s*\((M|F)\)\s*$/,'').trim();
+    const set={species,item,ability:null,nature:null,level:50,sp:{hp:0,atk:0,def:0,spa:0,spd:0,spe:0},moves:[],teraOff:true};
+    for(let i=1;i<lines.length;i++){
+      const L=lines[i];
+      if(/^Ability:/i.test(L))set.ability=L.split(':')[1].trim();
+      else if(/^Level:/i.test(L))set.level=+L.split(':')[1].trim()||50;
+      else if(/Nature/i.test(L))set.nature=L.replace(/Nature/i,'').trim();
+      else if(/^EVs:/i.test(L)){ L.split(':')[1].split('/').forEach(p=>{const m=p.trim().match(/(\d+)\s*(\w+)/);if(m){const map={hp:'hp',atk:'atk',def:'def',spa:'spa',spd:'spd',spe:'spe'};const k=map[m[2].toLowerCase()];if(k)set.sp[k]=+m[1];}}); }
+      else if(/^-\s/.test(L))set.moves.push(L.replace(/^-\s*/,'').split('/')[0].trim());
+    }
+    const fm=findMon(species); if(!fm)continue;
+    set.key=fm.key; set.base=fm.mon;
+    sets.push(set);
+  }
+  return sets;
+}
+
+// ---- build a battle-ready mon (stats + typing + flags) ----
+const MEGA_TYPE = { // megas whose typing/ability differ (verified set from prior work)
+  'staraptor':{t:['Fighting','Flying'],ab:'Contrary'},
+  'clefable':{t:['Fairy','Flying']},
+};
+function buildMon(set){
+  const mon=set.base, bs=mon.bs, nat=set.nature||'Hardy';
+  let item=(set.item||'').toLowerCase(); if(isBannedItem(item)){ set.itemIllegal=item; item=''; }   // [FIX C6] enforce format item legality
+  const ab=(set.ability||'').toLowerCase();
+  let types=mon.t.slice();
+  const isMega = item.includes('ite') && !item.includes('white') || /-mega/i.test(set.species);
+  if(MEGA_TYPE[set.key]&&isMega)types=MEGA_TYPE[set.key].t.slice();
+  const st={
+    hp: hpL50(bs.hp,set.sp.hp),
+    atk: statL50(bs.atk,set.sp.atk,natMul(nat,'atk')),
+    def: statL50(bs.def,set.sp.def,natMul(nat,'def')),
+    spa: statL50(bs.spa,set.sp.spa,natMul(nat,'spa')),
+    spd: statL50(bs.spd,set.sp.spd,natMul(nat,'spd')),
+    spe: statL50(bs.spe,set.sp.spe,natMul(nat,'spe')),
+  };
+  return { key:set.key, name:mon.name, types, st, item, ability:ab, moves:set.moves.slice(),
+           sets:set, isMega, setsWeather: WEATHER_SETTER[ab]||null };
+}
+
+// ---- speed with modifiers ----
+function speed(m, ctx){
+  let s=m.st.spe;
+  if(m.item==='choice scarf')s=Math.floor(s*1.5);
+  if(SPEED_ABIL[m.ability]&&ctx.weather===SPEED_ABIL[m.ability])s*=2;
+  if(ctx.tailwind&&ctx.tailwind.has(m.side))s*=2;
+  if(m.ability==='speed boost'&&ctx.turn>0)s=Math.floor(s*stageBoostMul(Math.min(6,ctx.turn)));
+  return s;
+}
+function stageBoostMul(st){return st>=0?(2+st)/2:2/(2-st);}
+
+// ---- best-move damage of attacker vs defender (returns max % of def HP) ----
+function bestDamage(att, def, ctx){
+  let best=null;
+  for(const mvName of att.moves){
+    const mv=mvByName[(mvName||'').toLowerCase()]; if(!mv||mv.c==='Status'||!mv.bp)continue;
+    const dmg=moveDamage(att,def,mv,ctx);
+    if(!best || dmg.pKO>best.pKO || (dmg.pKO===best.pKO && dmg.pct>best.pct)) best=dmg;   // [FIX C4] rank by P(KO) then damage
+  }
+  return best || {pct:0,minPct:0,pKO:0,move:null};
+}
+function moveDamage(att,def,mv,ctx){
+  const phys=mv.c==='Physical';
+  let A = phys? att.st.atk : att.st.spa;
+  let D = phys? def.st.def : def.st.spd;
+  // [FIX C1] ability-based immunities (Levitate / Volt Absorb / Water Absorb / Flash Fire / Sap Sipper) + Ground vs airborne
+  const _imm=IMMUNE_ABIL[mv.t]; if(_imm && _imm.includes(def.ability)) return {pct:0,minPct:0,pKO:0,move:mv.n};
+  if(mv.t==='Ground' && airborne(def) && !ctx.gravity && (mv.n||'').toLowerCase()!=='thousand arrows') return {pct:0,minPct:0,pKO:0,move:mv.n};
+  // [FIX C2] Intimidate now actually fires — from the defending mon's ability (was dead ctx flag)
+  if(phys && (def.ability==='intimidate')) A=Math.floor(A*stageBoostMul(-1));
+  const e=eff(mv.t, def.types); if(e===0)return {pct:0,minPct:0,pKO:0,move:mv.n};
+  // STAB
+  let stab=1; if(att.types.includes(mv.t)) stab = att.ability==='adaptability'?2:1.5;
+  if(att.ability==='protean') stab = 1.5; // protean guarantees STAB on any move
+  // weather
+  let wx=1;
+  if(ctx.weather==='rain'){ if(mv.t==='Water')wx=1.5; if(mv.t==='Fire')wx=0.5; }
+  if(ctx.weather==='sun'){ if(mv.t==='Fire')wx=1.5; if(mv.t==='Water')wx=0.5; }
+  const nm=(mv.n||'').toLowerCase();
+  // terrain (grounded attacker boosts its type; grassy halves EQ; misty halves Dragon)
+  if(ctx.terrain && grounded(att,ctx) && TERRAIN_BOOST[ctx.terrain]===mv.t) wx*=1.3;
+  if(ctx.terrain==='grassy' && grounded(def,ctx) && (nm==='earthquake'||nm==='bulldoze'||nm==='magnitude')) wx*=0.5;
+  if(ctx.terrain==='misty' && grounded(def,ctx) && mv.t==='Dragon') wx*=0.5;
+  if(ctx.weather==='heavyrain' && mv.t==='Fire') return {pct:0,minPct:0,move:mv.n};
+  if(ctx.weather==='harshsun' && mv.t==='Water') return {pct:0,minPct:0,move:mv.n};
+  // combined final modifier (abilities, items, screens, doubles support)
+  let M=1; const ab=att.ability, db=def.ability;
+  if(ab==='mega launcher' && /pulse|aura sphere/.test(nm)) M*=1.5;
+  if(ab==='technician' && mv.bp<=60) M*=1.5;
+  if(ab==='tough claws' && !CONTACT_EXCLUDE.has(nm)) M*=1.3;
+  if(ab==='iron fist' && PUNCH.has(nm)) M*=1.2;
+  if(ab==='reckless' && /wood hammer|brave bird|flare blitz|head smash|wild charge|double-edge|take down|high jump kick|jump kick|light of ruin|head charge|volt tackle/.test(nm)) M*=1.2;
+  if(ab==='sharpness' && SLICING.has(nm)) M*=1.5;
+  if(ab==='punk rock' && SOUND.has(nm)) M*=1.3;
+  if(ab==='water bubble' && mv.t==='Water') M*=2;
+  if(ab==='transistor' && mv.t==='Electric') M*=1.3;
+  if((ab==='dragons maw'||ab==="dragon's maw") && mv.t==='Dragon') M*=1.5;
+  if(ab==='rocky payload' && mv.t==='Rock') M*=1.5;
+  if((ab==='steelworker'||ab==='steely spirit') && mv.t==='Steel') M*=1.5;
+  if(ab==='sand force' && ctx.weather==='sand' && ['Rock','Ground','Steel'].includes(mv.t)) M*=1.3;
+  if(ab==='analytic' && ctx.movesLast) M*=1.3;
+  if(ab==='tinted lens' && e<1) M*=2;
+  if(ab==='neuroforce' && e>1) M*=1.25;
+  if((db==='multiscale'||db==='shadow shield') && ctx.defFullHP) M*=0.5;
+  if((db==='filter'||db==='solid rock'||db==='prism armor') && e>1) M*=0.75;
+  if(db==='thick fat' && (mv.t==='Fire'||mv.t==='Ice')) M*=0.5;
+  if(db==='heatproof' && mv.t==='Fire') M*=0.5;
+  if(db==='ice scales' && !phys) M*=0.5;
+  if(db==='fur coat' && phys) M*=0.5;
+  if(db==='fluffy'){ if(!CONTACT_EXCLUDE.has(nm) && mv.t!=='Fire') M*=0.5; if(mv.t==='Fire') M*=2; }
+  if(db==='punk rock' && SOUND.has(nm)) M*=0.5;
+  if(db==='dry skin' && mv.t==='Fire') M*=1.25;
+  // items
+  let lo=false, choice=1;
+  if(att.item==='life orb') lo=true;
+  if(att.item==='expert belt' && e>1) M*=1.2;
+  if(att.item==='wise glasses' && !phys) M*=1.1;
+  if(att.item==='muscle band' && phys) M*=1.1;
+  if(att.item==='punching glove' && PUNCH.has(nm)) M*=1.1;
+  if(TYPEBOOST[att.item]===mv.t) M*=1.2;
+  // Reg M-B item pool: no Choice Specs / Choice Band / Assault Vest (Choice Scarf is the only legal Choice item, handled in speed())
+  // screens (0.5 single / 2732-4096 doubles; ignored on crit)
+  if(ctx.screens && !ctx.crit){ const dbl=ctx.doubles?2732/4096:0.5;
+    if((ctx.screens==='reflect'||ctx.screens==='auroraveil') && phys) M*=dbl;
+    if((ctx.screens==='lightscreen'||ctx.screens==='auroraveil') && !phys) M*=dbl; }
+  // doubles support
+  if(ctx.helpingHand) M*=1.5;
+  if(ctx.battery && !phys) M*=1.3;
+  if(ctx.powerSpot) M*=1.3;
+  if(ctx.flowerGift && phys && (ctx.weather==='sun'||ctx.weather==='harshsun')) M*=1.5;
+  if(ctx.friendGuard) M*=0.75;
+  if(ctx.weather==='snow' && def.types.includes('Ice') && phys) M*=1/1.5;
+  if(ctx.attackerBurned && phys && att.ability!=='guts') M*=0.5;   // burn halves physical (activates inside the turn simulator)
+  const spread = SPREAD.has(nm) && ctx.spread!==false;
+  const crit = ctx.crit?1.5:1;
+  let d=Math.floor(Math.floor(22*mv.bp*A/D)/50)+2;
+  if(spread)d=pokeRound(d*0.75);
+  if(wx!==1)d=pokeRound(d*wx);
+  if(crit!==1)d=pokeRound(d*crit);
+  const roll=r=>{let x=Math.floor(d*r/100);if(stab!==1)x=pokeRound(x*stab);x=Math.floor(x*e);if(lo)x=pokeRound(x*5324/4096);if(choice!==1)x=pokeRound(x*choice);if(M!==1)x=pokeRound(x*M);return x;};
+  // [FIX C4] full 16-roll damage distribution -> P(KO) instead of a single max-roll "KO%"
+  let koRolls=0, dmgMax=0, dmgMin=1e9; const HP=def.st.hp;
+  for(let r=85;r<=100;r++){ const x=roll(r); if(x>dmgMax)dmgMax=x; if(x<dmgMin)dmgMin=x; if(x>=HP)koRolls++; }
+  const acc=(mv.acc&&mv.acc>0&&mv.acc<=100)?mv.acc/100:1;   // accuracy hook (not in current data -> 1)
+  const pKO=(koRolls/16)*acc;
+  return {pct:100*dmgMax/HP, minPct:100*dmgMin/HP, pKO, move:mv.n};
+}
+
+// ---- weather resolution for a matchup (who ends up setting) ----
+function resolveWeather(myMons, foeMons){
+  const mine=myMons.filter(m=>m.setsWeather), foe=foeMons.filter(m=>m.setsWeather);
+  if(!mine.length && !foe.length) return {weather:null, owner:null, contested:false};
+  if(mine.length && foe.length){
+    // both sides can set -> contested weather war (you can flip it): neutral for scoring
+    const all=[...mine.map(m=>({m,s:'me'})),...foe.map(m=>({m,s:'foe'}))].sort((a,b)=>(b.m.isMega?1:0)-(a.m.isMega?1:0)||a.m.st.spe-b.m.st.spe);
+    return {weather:all[0].m.setsWeather, owner:all[0].s, contested:true};
+  }
+  const arr=mine.length?mine:foe, side=mine.length?'me':'foe';
+  arr.sort((a,b)=>(b.isMega?1:0)-(a.isMega?1:0)||a.st.spe-b.st.spe);
+  return {weather:arr[0].setsWeather, owner:side, contested:false};
+}
+function sandExposed(m){ return !m.types.some(t=>['Rock','Ground','Steel'].includes(t)); }
+
+// ---- score one of my mons vs the foe six (KO-trade based) ----
+function monVsFoe(me, foe, ctx){
+  const myFast = speed({...me,side:'me'},{...ctx,tailwind:ctx.tw})>=speed({...foe,side:'foe'},{...ctx,tailwind:ctx.tw});
+  const myHit = bestDamage({...me,side:'me'}, {...foe,side:'foe'}, {...ctx,defFullHP:true});
+  const foeHit= bestDamage({...foe,side:'foe'}, {...me,side:'me'}, {...ctx,defFullHP:true});
+  let s=0;
+  const myKO=myHit.pKO||0, foeKO=foeHit.pKO||0;   // [FIX C4] probabilities, not max-roll
+  // do I KO / 2HKO?
+  if(myKO>=0.99)s+=3; else if(myKO>=0.5)s+=2.2; else if(myHit.pct>=50)s+=1.2; else if(myHit.pct>=33)s+=0.4; else s-=0.5;
+  // do they KO me?
+  if(foeKO>=0.99)s-= myFast?1.0:2.2; else if(foeKO>=0.5)s-=(myFast?0.7:1.5); else if(foeHit.pct>=50)s-=0.6;
+  // speed edge on a likely KO
+  if(myKO>=0.5 && myFast)s+=1.0;
+  // setup-sweeper valuation (single-ply blind spot): reward mons that snowball
+  const setupMv=me.moves.map(m=>SETUP[(m||'').toLowerCase()]).filter(Boolean);
+  if(setupMv.length && myHit.pct<100){
+    const boosted=myHit.pct*Math.max(...setupMv);
+    // can it realistically get the boost off? faster, or bulky enough to survive, or Speed Boost, or Protect/Sub
+    const mvlc=me.moves.map(x=>(x||'').toLowerCase());
+    const canSetup = myFast || foeHit.pct<65 || me.ability==='speed boost' || mvlc.includes('protect') || mvlc.includes('substitute');
+    if(boosted>=100 && canSetup) s += (me.ability==='speed boost'?1.6:1.1);
+    else if(boosted>=100) s += 0.4;
+  }
+  return {s, myHit, foeHit, myFast, setup:setupMv.length>0};
+}
+
+// ---- team (my 4) vs foe (6) ----
+function teamVs(my4, foe6, opts={}){
+  const w=resolveWeather(my4, foe6);
+  // contested weather war -> neutral for damage boosts (you can flip it with your own setter)
+  const boostWx = w.contested ? null : w.weather;
+  const ctx={weather:boostWx, tw:opts.tw||{has:()=>false}, turn:0, spread:true};
+  const detail=[]; let total=0;
+  for(const foe of foe6){
+    let best=-99, who=null, br=null;
+    for(const me of my4){ const r=monVsFoe(me,foe,ctx); if(r.s>best){best=r.s;who=me;br=r;} }
+    total+=best; if(best<0)total-=0.6;
+    detail.push({foe:foe.name, answer:who.name, s:+best.toFixed(2), myHit:br?+br.myHit.pct.toFixed(0):0});
+  }
+  // weather chip liability (only their weather; halved if you brought a setter to contest it)
+  const notes=[];
+  if(w.weather==='sand' && w.owner==='foe'){
+    const exp=my4.filter(sandExposed);
+    if(exp.length){ const pen=(w.contested?0.6:0.75)*exp.length; total-=pen;
+      notes.push(exp.length+' mon(s) chipped by their sand'+(w.contested?' (sand re-sets — Steels safer)':'')+': '+exp.map(m=>m.name).join(', ')); }
+  }
+  if(w.weather==='sun' && w.owner==='foe' && !w.contested){
+    const waters=my4.filter(m=>m.moves.some(mv=>{const x=mvByName[(mv||'').toLowerCase()];return x&&x.t==='Water';}));
+    if(waters.length){ total-=0.5*waters.length; notes.push('Water attackers halved by their sun (no rain setter in this 4)'); }
+  }
+  // speed control presence
+  const hasTW=my4.some(m=>m.moves.map(x=>x.toLowerCase()).includes('tailwind')||m.ability==='prankster');
+  if(!hasTW){ total-=1.0; notes.push('No speed control in this 4'); }
+  return {score:+total.toFixed(2), detail, notes, weather:w};
+}
+
+// ---- bring 4 of 6 + lead ----
+function combos4(a){const r=[];for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++)for(let k=j+1;k<a.length;k++)for(let l=k+1;l<a.length;l++)r.push([a[i],a[j],a[k],a[l]]);return r;}
+function bring4(mine6, foe6, opts={}){
+  const subs=combos4(mine6).map(sub=>({sub, r:teamVs(sub,foe6,opts)})).sort((a,b)=>b.r.score-a.r.score);
+  const best=subs[0];
+  // lead = pair with the most turn-1 pressure (KO threats + speed), not safe average
+  const w=best.r.weather;
+  const ctx={weather:w.contested?null:w.weather, tw:opts.tw||{has:()=>false}, turn:0, spread:true};
+  const pressure={};
+  for(const me of best.sub){ let p=0; for(const foe of foe6){ const r=monVsFoe(me,foe,ctx); if(r.myHit.pct>=100)p+=r.myFast?2:1.2; else if(r.myHit.pct>=50)p+=0.4; } pressure[me.name]=p; }
+  const lead=[...best.sub].sort((a,b)=>pressure[b.name]-pressure[a.name]).slice(0,2).map(m=>m.name);
+  return {bring:best.sub.map(m=>m.name), lead, score:best.r.score, detail:best.r.detail, notes:best.r.notes,
+          weather:w.weather?(w.weather+(w.contested?' (contested)':' ('+w.owner+')')):'none', subs:subs.slice(0,3).map(s=>({t:s.sub.map(m=>m.name),score:s.r.score}))};
+}
+
+/* ================= inference tables ================= */
+const ABIL={pelipper:'Drizzle',politoed:'Drizzle',torkoal:'Drought',charizard:'Drought',tyranitar:'Sand Stream','ninetales-alola':'Snow Warning',abomasnow:'Snow Warning',incineroar:'Intimidate',gyarados:'Intimidate',staraptor:'Intimidate',archaludon:'Stamina',meowscarada:'Protean',greninja:'Protean',kingambit:'Defiant',whimsicott:'Prankster',basculegion:'Adaptability',dragonite:'Multiscale',blastoise:'Mega Launcher',sylveon:'Pixilate',garchomp:'Rough Skin',sinistcha:'Hospitality',grimmsnarl:'Prankster'};
+const MEGA_ITEM={blastoise:'Blastoisinite',charizard:'Charizardite Y',tyranitar:'Tyranitarite',gyarados:'Gyaradosite',metagross:'Metagrossite',gengar:'Gengarite',staraptor:'Staraptite',venusaur:'Venusaurite',sceptile:'Sceptilite',aerodactyl:'Aerodactylite'};
+
+function autoFoe(key){
+  const mon=MONS[key]; if(!mon)return null;
+  const phys=mon.bs.atk>=mon.bs.spa, cat=phys?'Physical':'Special';
+  const cand=Object.values(MOVES).filter(m=>m.c===cat&&m.bp&&!BAD_AUTO.has(m.n.toLowerCase()));
+  const moves=[];
+  mon.t.forEach(ty=>{const b=cand.filter(m=>m.t===ty).sort((a,b)=>b.bp-a.bp)[0]; if(b&&!moves.includes(b.n))moves.push(b.n);});
+  const cov=cand.filter(m=>!mon.t.includes(m.t)).sort((a,b)=>b.bp-a.bp)[0]; if(cov&&moves.length<3)moves.push(cov.n);
+  let gi=0; while(moves.length<2){const x=cand.sort((a,b)=>b.bp-a.bp)[gi++]; if(!x)break; if(!moves.includes(x.n))moves.push(x.n);}
+  const item=MEGA_ITEM[key]||'Life Orb', nat=phys?'Adamant':'Modest', sp=phys?'2 HP / 32 Atk / 32 Spe':'2 HP / 32 SpA / 32 Spe';
+  return mon.name+' @ '+item+'\nAbility: '+(ABIL[key]||'Pressure')+'\nLevel: 50\n'+nat+' Nature\nEVs: '+sp+'\n'+moves.map(x=>'- '+x).join('\n');
+}
+function normSF(sf){ const f=findMon(sf); return f?f.key:null; }
+
+/* ================= Showdown bridge ================= */
+function getBattle(){try{
+  const c=[];
+  if(window.app){ if(app.curRoom&&app.curRoom.battle)c.push(app.curRoom.battle);
+    if(app.rooms)for(const k in app.rooms){const r=app.rooms[k]; if(r&&r.battle)c.push(r.battle);} }
+  if(window.PS){ if(PS.curRoom&&PS.curRoom.battle)c.push(PS.curRoom.battle);
+    if(PS.rooms)for(const k in PS.rooms){const r=PS.rooms[k]; if(r&&r.battle)c.push(r.battle);} }
+  if(window.room&&window.room.battle)c.push(window.room.battle);
+  let best=null,bn=-1;
+  for(const b of c){ const n=((b.stepQueue||b.log||[]).length)||0; if(n>bn){bn=n;best=b;} }
+  return best;
+}catch(e){return null;}}
+// bulletproof fallback: read the "<user>'s team: A / B / C" lines the client prints at preview
+function readTeamsFromDOM(){try{
+  const txt=(document.body&&document.body.innerText)||'';
+  const me=((window.app&&app.user&&app.user.get&&app.user.get('name'))||(window.PS&&PS.user&&PS.user.name)||'').trim();
+  const re=/([^\n]{1,30}?)'s team:\s*([^\n]+)/g; let m; const teams=[];
+  while((m=re.exec(txt))!==null){ const list=m[2].split('/').map(s=>s.trim()).filter(Boolean); if(list.length>=3)teams.push({who:m[1].trim(),list}); }
+  if(teams.length<2)return null;
+  let mineT=teams.find(t=>me&&t.who.toLowerCase()===me.toLowerCase())||teams[0];
+  const foeT=teams.find(t=>t!==mineT);
+  const mine=[...new Set(mineT.list.map(normSF).filter(Boolean))];
+  const foe =[...new Set(foeT.list.map(normSF).filter(Boolean))];
+  if(mine.length>=3&&foe.length>=3)return {mine:mine.slice(0,6),foe:foe.slice(0,6)};
+  return null;
+}catch(e){return null;}}
+function sideSpecies(side){if(!side)return[];const a=side.pokemon||side.team||[];return a.map(p=>p&&(p.speciesForme||p.species||p.name)).filter(Boolean);}
+function readTeams(){
+  const b=getBattle();
+  if(!b){ const dom=readTeamsFromDOM(); if(dom){ window.__chompDiag='read from page text'; return dom; }
+    window.__chompDiag='no battle open'; return null; }
+  // PRIMARY: parse |poke| lines from the battle log/stepQueue — populated at team preview
+  const q=b.stepQueue||b.log||(b.battle&&b.battle.stepQueue)||[];
+  const poke={p1:[],p2:[]}, names={p1:'',p2:''};
+  for(let i=0;i<q.length;i++){ const line=''+q[i]; let m;
+    if(m=line.match(/^\|player\|(p[12])\|([^|]*)/)){ if(m[2])names[m[1]]=m[2]; }
+    else if(m=line.match(/^\|poke\|(p[12])\|([^,|]+)/)){ poke[m[1]].push(m[2].trim()); }
+  }
+  let mySide=(b.mySide&&(b.mySide.sideid||b.mySide.id))||null;
+  if(!mySide){ const me=((window.app&&app.user&&app.user.get&&app.user.get('name'))||'').toLowerCase();
+    mySide = names.p1.toLowerCase()===me?'p1':(names.p2.toLowerCase()===me?'p2':'p1'); }
+  const foeSide = mySide==='p1'?'p2':'p1';
+  let mine=[...new Set(poke[mySide].map(normSF).filter(Boolean))];
+  let foe =[...new Set(poke[foeSide].map(normSF).filter(Boolean))];
+  // FALLBACK: live side arrays (mid-battle)
+  if(mine.length<3||foe.length<3){
+    let near=b.mySide||b.nearSide||(b.sides&&b.sides[0]), far=b.farSide||(b.sides&&b.sides[1]);
+    if(b.mySide&&far===b.mySide){const t=near;near=far;far=t;}
+    const m2=[...new Set(sideSpecies(near).map(normSF).filter(Boolean))], f2=[...new Set(sideSpecies(far).map(normSF).filter(Boolean))];
+    if(m2.length>mine.length)mine=m2; if(f2.length>foe.length)foe=f2;
+  }
+  // if the battle object didn't give us teams (BETA client), fall back to the page text
+  if(mine.length<3||foe.length<3){
+    const dom=readTeamsFromDOM();
+    if(dom){ window.__chompDiag='read from page text'; return dom; }
+    window.__chompDiag='read '+mine.length+' mine / '+foe.length+' foe';
+    return null;
+  }
+  window.__chompDiag='read '+mine.length+' mine / '+foe.length+' foe';
+  return {mine:mine.slice(0,6), foe:foe.slice(0,6)};
+}
+// pull my REAL set for each species from Showdown's saved teams (matches the 6 I brought)
+function myRealSets(mineKeys){
+  try{
+    const S=window.Storage; if(!S||!S.teams)return {};
+    let best=null, bestHit=0;
+    for(const t of S.teams){
+      if(typeof t.team!=='string')continue;
+      let arr; try{arr=S.unpackTeam(t.team);}catch(e){continue;}
+      const keys=arr.map(s=>normSF(s.species||s.name)).filter(Boolean);
+      const hit=mineKeys.filter(k=>keys.includes(k)).length;
+      if(hit>bestHit){bestHit=hit; best=arr;}
+    }
+    if(!best||bestHit<Math.min(4,mineKeys.length))return {};
+    const paste=window.Storage.exportTeam?window.Storage.exportTeam(best):null;
+    if(!paste)return {};
+    const map={}; parsePaste(paste).forEach(s=>{const b=buildMon(s); if(b)map[b.key]=b;});
+    return map;
+  }catch(e){return {};}
+}
+function buildSides(t){
+  const real=myRealSets(t.mine);
+  const my6=t.mine.map(k=> real[k] || buildMon(parsePaste(autoFoe(k))[0]) ).filter(Boolean);
+  const foe6=t.foe.map(k=> buildMon(parsePaste(autoFoe(k))[0]) ).filter(Boolean);
+  return {my6, foe6, usedReal:Object.keys(real).length};
+}
+
+/* ================= panel ================= */
+let panel;
+function ensure(){
+  if(panel)return panel;
+  panel=document.createElement('div'); panel.id='olv2';
+  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span id="olv2m">–</span></div><div id="olv2b"></div>';
+  document.body.appendChild(panel);
+  const css=document.createElement('style'); css.textContent=`
+  #olv2{position:fixed;top:64px;right:12px;width:288px;z-index:99999;background:#0f1216;border:1px solid #2a2f3a;border-radius:10px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#e6e9ef;box-shadow:0 8px 30px rgba(0,0,0,.55)}
+  #olv2h{font-size:10px;letter-spacing:1px;font-weight:700;color:#9aa1ad;padding:9px 11px;border-bottom:1px solid #23272f;display:flex;justify-content:space-between;cursor:move;user-select:none}
+  #olv2m{cursor:pointer;color:#5b6270}
+  #olv2b{padding:11px} #olv2.min #olv2b{display:none}
+  .v2lead{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px}
+  .v2br{font-size:12px;color:#c3c9d4;margin-bottom:4px}
+  .v2wx{font-size:11px;color:#7fb5ff;margin-bottom:8px}
+  .v2row{display:flex;align-items:center;gap:7px;font-size:11px;margin:3px 0}
+  .v2row .fn{flex:1;color:#9aa1ad;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .v2bar{width:46px;height:6px;border-radius:4px;background:#1c2028;overflow:hidden;flex:0 0 46px}
+  .v2bar>span{display:block;height:100%}
+  .v2ans{color:#e6e9ef;flex:0 0 92px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .v2note{font-size:10px;color:#e5a54b;margin-top:8px;line-height:1.35}
+  .v2wait{font-size:12px;color:#6c7480}`;
+  document.head.appendChild(css);
+  const h=panel.querySelector('#olv2h');let dx=0,dy=0,drag=false;
+  h.addEventListener('mousedown',e=>{if(e.target.id==='olv2m')return;drag=true;dx=e.clientX-panel.offsetLeft;dy=e.clientY-panel.offsetTop;});
+  document.addEventListener('mousemove',e=>{if(drag){panel.style.left=(e.clientX-dx)+'px';panel.style.top=(e.clientY-dy)+'px';panel.style.right='auto';}});
+  document.addEventListener('mouseup',()=>drag=false);
+  panel.querySelector('#olv2m').addEventListener('click',()=>panel.classList.toggle('min'));
+  return panel;
+}
+function col(pct){return pct>=100?'#2fbf6b':pct>=50?'#7fce4c':pct>=33?'#f5a623':'#e5484d';}
+function disp(k){return (MONS[k]&&MONS[k].name)|| k;}
+let lastKey='';
+function render(){
+  const p=ensure(), body=p.querySelector('#olv2b'), t=readTeams();
+  if(!t){ body.innerHTML='<div class="v2wait">'+((window.__chompDiag)||'Open a Champions battle.')+'</div>'; lastKey=''; return; }
+  const key=t.mine.join(',')+'|'+t.foe.join(',');
+  if(key===lastKey)return; lastKey=key;
+  const {my6,foe6,usedReal}=buildSides(t);
+  if(my6.length<4||foe6.length<4){body.innerHTML='<div class="v2wait">Reading teams…</div>';lastKey='';return;}
+  const r=bring4(my6,foe6);
+  let h='<div class="v2lead">'+r.lead.join(' + ')+'</div>';
+  h+='<div class="v2br">Bring: '+r.bring.join(', ')+'</div>';
+  h+='<div class="v2wx">Weather: '+r.weather+'  ·  score '+r.score+'  ·  '+usedReal+'/6 real sets</div>';
+  r.detail.forEach(d=>{h+='<div class="v2row"><span class="fn">'+d.foe+'</span><span class="v2bar"><span style="width:'+Math.max(8,Math.min(100,d.myHit))+'%;background:'+col(d.myHit)+'"></span></span><span class="v2ans">'+d.answer+' '+d.myHit+'%</span></div>';});
+  if(r.notes&&r.notes.length)h+='<div class="v2note">▲ '+r.notes.join('<br>▲ ')+'</div>';
+  body.innerHTML=h;
+}
+/* ===== auto-close the News popup + collapse the rooms (Hide) — one-shot Hide so it can't loop ===== */
+let _chompHid=false;
+function chompAutoClose(){ try{
+  // News box: click its close, else hide the container
+  [...document.querySelectorAll('h3,.title,.roomtab,strong')].forEach(h=>{
+    if(/^\s*News\s*$/i.test((h.textContent||'').trim())){
+      const box=h.closest('.readme,.ps-popup,.news,.mainmenu,div');
+      const cx=box&&box.querySelector('button[name="close"],.closebutton,button.closebutton');
+      if(cx)cx.click(); else if(box)box.style.display='none';
+    }
+  });
+  document.querySelectorAll('.readme .closebutton,.news .closebutton,.pmbox .closebutton').forEach(b=>b.click());
+  // Hide the rooms sidebar exactly once
+  if(!_chompHid){
+    const hb=[...document.querySelectorAll('button,.roomtab')].find(b=>{
+      const t=(b.textContent||'').trim(); return t==='Hide'||b.getAttribute('name')==='toggleRoomList'||b.getAttribute('name')==='roomlist'; });
+    if(hb){ hb.click(); _chompHid=true; }
+  }
+}catch(e){} }
+chompAutoClose(); setInterval(chompAutoClose,1500);
+setInterval(render,900);
+console.log('[CHOMP] real damage model active — '+Object.keys(MONS).length+' mons, '+Object.keys(MOVES).length+' moves.');
+})();
