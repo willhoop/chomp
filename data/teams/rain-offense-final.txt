@@ -1,0 +1,53 @@
+Pelipper @ Wacan Berry
+Ability: Drizzle
+Level: 50
+Modest Nature
+- Hurricane
+- Weather Ball
+- Wide Guard
+- Tailwind
+
+Whimsicott @ Focus Sash
+Ability: Prankster
+Level: 50
+Timid Nature
+- Tailwind
+- Moonblast
+- Encore
+- Worry Seed
+
+Blastoise @ Blastoisinite
+Ability: Mega Launcher
+Level: 50
+Modest Nature
+- Water Spout
+- Aura Sphere
+- Dark Pulse
+- Protect
+
+Archaludon @ Leftovers
+Ability: Stamina
+Level: 50
+Modest Nature
+- Electro Shot
+- Draco Meteor
+- Flash Cannon
+- Protect
+
+Meowscarada @ Life Orb
+Ability: Protean
+Level: 50
+Jolly Nature
+- Flower Trick
+- Knock Off
+- Taunt
+- U-turn
+
+Kingambit @ Black Glasses
+Ability: Defiant
+Level: 50
+Adamant Nature
+- Kowtow Cleave
+- Sucker Punch
+- Iron Head
+- Protect

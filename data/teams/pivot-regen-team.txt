@@ -1,0 +1,61 @@
+=== [gen9championsvgc2026regmb] Pivot Regen ===
+
+Dragalge (F) @ Dragalgite
+Ability: Adaptability
+Level: 50
+Modest Nature
+EVs: 32 HP / 20 SpA / 14 SpD
+- Draco Meteor
+- Sludge Bomb
+- Flip Turn
+- Protect
+
+Incineroar (M) @ Sitrus Berry
+Ability: Intimidate
+Level: 50
+Careful Nature
+EVs: 32 HP / 2 Atk / 12 Def / 20 SpD
+- Fake Out
+- Flare Blitz
+- Knock Off
+- Parting Shot
+
+Sinistcha @ Colbur Berry
+Ability: Hospitality
+Level: 50
+Bold Nature
+EVs: 32 HP / 20 Def / 14 SpD
+- Matcha Gotcha
+- Strength Sap
+- Rage Powder
+- Protect
+
+Meowscarada (F) @ Focus Sash
+Ability: Protean
+Level: 50
+Jolly Nature
+EVs: 2 HP / 32 Atk / 32 Spe
+- Flower Trick
+- U-turn
+- Taunt
+- Protect
+
+Rotom-Wash @ Choice Scarf
+Ability: Levitate
+Level: 50
+Timid Nature
+EVs: 32 HP / 2 Def / 32 Spe
+- Hydro Pump
+- Volt Switch
+- Will-O-Wisp
+- Trick
+
+Toxapex (M) @ Leftovers
+Ability: Regenerator
+Level: 50
+Calm Nature
+EVs: 32 HP / 12 Def / 20 SpD
+- Haze
+- Recover
+- Toxic
+- Baneful Bunker
