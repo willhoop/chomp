@@ -211,8 +211,9 @@ function render(){
   if(key===lastKey)return; lastKey=key;
   const {my6,foe6,usedReal}=buildSides(t);
   if(my6.length<4||foe6.length<4){body.innerHTML='<div class="v2wait">Reading teams…</div>';lastKey='';return;}
-  const foeLikely=(foe6.length>4)?likelyFoe4(foe6,my6):foe6;   // ABRA: who they'll actually bring
-  const r=bring4(my6,foeLikely);
+  const r=bring4(my6,foe6);   // pick the 4 that cover their WHOLE six (robust — you can't know their 4)
+  // ABRA intel (advisory, does not constrain the bring): their likely 4 and likely leads
+  const foeLikely=(foe6.length>4)?likelyFoe4(foe6,my6):foe6;
   let h='<div class="v2k">LEAD</div><div class="v2v">'+r.lead.join(' + ')+'</div>';
   h+='<div class="v2k">BRING</div><div class="v2v">'+r.bring.join(' · ')+'</div>';
   body.innerHTML=h;
