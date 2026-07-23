@@ -1,11 +1,15 @@
 // ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.0
+// @version      2.2
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
+// @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
 // @run-at       document-idle
 // @grant        none
+// @homepageURL  https://github.com/willhoop/chomp
+// @downloadURL  https://raw.githubusercontent.com/willhoop/chomp/main/app/plugin/chomp-bring4.user.js
+// @updateURL    https://raw.githubusercontent.com/willhoop/chomp/main/app/plugin/chomp-bring4.user.js
 // ==/UserScript==
 (function(){
 "use strict";
@@ -485,7 +489,7 @@ let panel;
 function ensure(){
   if(panel)return panel;
   panel=document.createElement('div'); panel.id='olv2';
-  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span id="olv2m">–</span></div><div id="olv2b"></div>';
+  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">v2.2</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
   document.body.appendChild(panel);
   const css=document.createElement('style'); css.textContent=`
   #olv2{position:fixed;top:64px;right:12px;width:288px;z-index:99999;background:#0f1216;border:1px solid #2a2f3a;border-radius:10px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#e6e9ef;box-shadow:0 8px 30px rgba(0,0,0,.55)}

@@ -52,6 +52,22 @@ Do these steps:
 
 The plugin is now active.
 
+## 1.1a Update the plugin to a new build
+The panel header shows the version, for example **CHOMP — BRING 4 · v2.1**. The plugin does not
+update itself, because you install it by paste and not from a web address. To update:
+
+1. Open the file `app/plugin/chomp-plugin-COPY-ME.txt`.
+2. Select all of the text. Copy the text.
+3. Click the Tampermonkey icon. Click **Dashboard**.
+4. Open the **CHOMP** script.
+5. Select all of the old text. Delete the text.
+6. Paste the new text. Press **Ctrl+S**.
+7. Reload the Pokémon Showdown page.
+8. Start a battle. Check that the panel shows the new version number.
+
+If the panel shows `read 0 mine / 0 foe` while a battle is open, the installed script is old. Do
+the update steps above.
+
 ## 1.2 Get your first recommendation
 Do these steps:
 
