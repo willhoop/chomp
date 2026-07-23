@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.5
+// @version      2.6
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
 // @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
@@ -513,7 +513,7 @@ let panel;
 function ensure(){
   if(panel)return panel;
   panel=document.createElement('div'); panel.id='olv2';
-  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">v2.4</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
+  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">'+((typeof GM_info!=='undefined'&&GM_info.script&&GM_info.script.version)?('v'+GM_info.script.version):'v2.6')+'</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
   document.body.appendChild(panel);
   const css=document.createElement('style'); css.textContent=`
   #olv2{position:fixed;top:64px;right:12px;width:288px;z-index:99999;background:#0f1216;border:1px solid #2a2f3a;border-radius:10px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#e6e9ef;box-shadow:0 8px 30px rgba(0,0,0,.55)}
@@ -666,10 +666,19 @@ function refresh(){
   dSel.innerHTML=opt(teams.them.filter(n=>ORB.mons[n]), teams.them[0]);
   renderMoves();
 }
+function realMoves(species){
+  try{
+    const b=window.app&&app.curRoom&&app.curRoom.battle; if(!b)return null;
+    const mine=b.myPokemon||[];
+    for(const p of mine){ const sp=idn(((p.speciesForme||p.species||p.details||'')+'').split(',')[0]); if(sp===species){ const mv=(p.moves||[]).map(idn).filter(Boolean); if(mv.length)return mv; } }
+    for(const k of ['mySide','nearSide','farSide','p1','p2']){ const sd=b[k]; if(sd&&sd.pokemon){ for(const p of sd.pokemon){ const sp=idn(((p.speciesForme||p.species||p.name||'')+'').split(',')[0]); if(sp===species){ const mv=(p.moves||[]).map(m=>idn((m&&m.move)||m||'')).filter(Boolean); if(mv.length)return mv; } } } }
+    return null;
+  }catch(e){ return null; }
+}
 function renderMoves(){
   const att=mkMon(aSel.value), def=mkMon(dSel.value); if(!att||!def){out.textContent='Pick two Pokémon.';return;}
-  const mv=document.getElementById('orb-moves');
-  mv.innerHTML = att.mv.map(id=>{const m=ORB.moves[id]; if(!m||!m.bp) return ''; return `<button data-mv="${id}" style="cursor:pointer;border:1px solid #b7c0d8;background:#eef;border-radius:5px;padding:3px 7px">${nice(id)}</button>`;}).join('') || '<i>no damaging moves in data</i>';
+  const mv=document.getElementById('orb-moves'); const MVLIST=realMoves(att.name)||att.mv;
+  mv.innerHTML = MVLIST.map(id=>{const m=ORB.moves[id]; if(!m||!m.bp) return ''; return `<button data-mv="${id}" style="cursor:pointer;border:1px solid #b7c0d8;background:#eef;border-radius:5px;padding:3px 7px">${nice(id)}</button>`;}).join('') || '<i>no damaging moves in data</i>';
   mv.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
     const m=ORB.moves[btn.dataset.mv]; const d=dmgRange(att,def,m); if(!d){out.textContent='—';return;}
     const hp=def.st.hp, pMin=Math.round(100*d.min/hp), pMax=Math.round(100*d.max/hp);
