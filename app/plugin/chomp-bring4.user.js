@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.7
+// @version      2.8
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
 // @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
@@ -610,13 +610,29 @@ function dmgRange(att, def, mv, field){
   if(field.terrain==='grassy'&&mv.t==='Grass') base=Math.floor(base*1.3);
   if(field.terrain==='psychic'&&mv.t==='Psychic') base=Math.floor(base*1.3);
   if(field.terrain==='misty'&&mv.t==='Dragon') base=Math.floor(base*0.5);
+  if(att.ab==='technician'&&mv.bp<=60) base=Math.floor(base*1.5);
   const e = eff(mv.t, def.t); if(e===0) return {min:0,max:0,eff:0};
-  const stab = att.t.includes(mv.t)?1.5:1;
+  const IMM={waterabsorb:'Water',stormdrain:'Water',dryskin:'Water',voltabsorb:'Electric',lightningrod:'Electric',motordrive:'Electric',flashfire:'Fire',wellbakedbody:'Fire',sapsipper:'Grass',levitate:'Ground',eartheater:'Ground'};
+  if(IMM[def.ab]===mv.t) return {min:0,max:0,eff:0};
+  const stab = att.t.includes(mv.t)?(att.ab==='adaptability'?2:1.5):1;
   const burn = (phys&&att.status==='brn'&&att.ab!=='guts')?0.5:1;
   const lo = att.item==='lifeorb'?1.3:1;
   const hh = field.helpingHand?1.5:1;
+  let mod=1;
+  if((def.ab==='filter'||def.ab==='solidrock'||def.ab==='prismarmor')&&e>1) mod*=0.75;
+  if(att.ab==='neuroforce'&&e>1) mod*=1.25;
+  if(att.ab==='tintedlens'&&e<1) mod*=2;
+  if((def.ab==='multiscale'||def.ab==='shadowshield')&&(def.curHP==null||def.curHP>=def.st.hp)) mod*=0.5;
+  if(def.ab==='thickfat'&&(mv.t==='Fire'||mv.t==='Ice')) mod*=0.5;
+  if(def.ab==='heatproof'&&mv.t==='Fire') mod*=0.5;
+  if(def.ab==='purifyingsalt'&&mv.t==='Ghost') mod*=0.5;
+  if(att.ab==='waterbubble'&&mv.t==='Water') mod*=2;
+  if(def.ab==='waterbubble'&&mv.t==='Fire') mod*=0.5;
+  if(att.item==='expertbelt'&&e>1) mod*=1.2;
+  if(att.item==='muscleband'&&phys) mod*=1.1;
+  if(att.item==='wiseglasses'&&!phys) mod*=1.1;
   let scr=1; if(phys&&field.reflect) scr=field.spread?2732/4096:0.5; if(!phys&&field.lightscreen) scr=field.spread?2732/4096:0.5;
-  const roll = r => { let d=Math.floor(base*r/100); if(stab!==1)d=Math.floor(d*stab); d=Math.floor(d*e); if(burn<1)d=Math.floor(d*burn); if(scr!==1)d=Math.floor(d*scr); if(lo>1)d=Math.floor(d*lo); if(hh>1)d=Math.floor(d*hh); return d; };
+  const roll = r => { let d=Math.floor(base*r/100); if(stab!==1)d=Math.floor(d*stab); d=Math.floor(d*e); if(burn<1)d=Math.floor(d*burn); if(mod!==1)d=Math.floor(d*mod); if(scr!==1)d=Math.floor(d*scr); if(lo>1)d=Math.floor(d*lo); if(hh>1)d=Math.floor(d*hh); return d; };
   return {min:roll(85), max:roll(100), eff:e};
 }
 function liveMon(species){
