@@ -33,37 +33,15 @@ At team preview you get ~30 seconds to decide **which 4 of your 6 to bring and w
 - **Replay analyzer** — pulls your Showdown replays, scores what you brought vs what CHOMP would have brought, ranks the threats you actually face, and tunes your team against *your* metagame.
 - **Damage calculator** — standalone lab with 289 formes and 299 moves.
 
-## Install (userscript)
-1. Install [Tampermonkey](https://www.tampermonkey.net/).
-2. Open `plugin/chomp-plugin-COPY-ME.txt`, select all, copy.
-3. Tampermonkey → **Dashboard** → **+** (new script) → select all, delete → paste → **Ctrl+S**.
-4. Reload Pokémon Showdown and start a Champions battle.
+## Install — one click, auto-updating forever
 
-### Auto-update (recommended — set up once)
-Once CHOMP is pushed to `github.com/willhoop/chomp`, install it **from the URL** and Tampermonkey
-keeps it current by itself:
+1. Install [Tampermonkey](https://www.tampermonkey.net/) (one time, any browser).
+2. Click **[Install CHOMP + ORB](https://raw.githubusercontent.com/willhoop/chomp/main/app/plugin/chomp-bring4.user.js)** → Tampermonkey shows an **Install** page → click **Install**.
+3. Open a Champions battle on Pokémon Showdown. Done.
 
-1. Open the raw script:
-   `https://raw.githubusercontent.com/willhoop/chomp/main/app/plugin/chomp-bring4.user.js`
-2. Tampermonkey detects the `.user.js` and shows an **Install** page. Click **Install**.
-3. Done. Tampermonkey now checks for updates automatically. Each time the `@version` is bumped and
-   pushed, the panel updates on its own — no more pasting.
+Because you installed from the URL, Tampermonkey **auto-updates it every time a new build ships** — you never paste again, and you can never get stuck on an old version. The panel header always shows the current build so you can confirm what's running. Works on both the classic and BETA Showdown clients.
 
-The panel header shows the version (`CHOMP — BRING 4 · v2.2`), so you can confirm the current build
-is running.
-
-### Updating to a new build
-The plugin panel shows its version, e.g. **CHOMP — BRING 4 · v2.1**. If a battle shows
-`read 0 mine / 0 foe` or an old version number, the installed script is stale:
-
-1. Tampermonkey → **Dashboard** → open the **CHOMP** script.
-2. Select all, delete.
-3. Paste the current `plugin/chomp-plugin-COPY-ME.txt`. **Ctrl+S**.
-4. Reload Showdown. Check the panel shows the new version.
-
-Tampermonkey does not auto-update this script, because it is installed by paste, not from a URL.
-
-Works on both the classic and BETA Showdown clients, with a page-text fallback if the client internals change.
+> Paste fallback (only if you don't want auto-update): copy `app/plugin/chomp-plugin-COPY-ME.txt` into a new Tampermonkey script. Not recommended — a pasted copy will go stale and won't update itself.
 
 ## Replay analyzer
 Open `app/chomp-replay-app.html` in any browser, enter a Showdown username, click **Pull & analyze**. It caches locally, so history accumulates.
