@@ -1,6 +1,20 @@
 # CHOMP
 ### Champions Head-to-head Optimizer for Matchup Prediction
 
+---
+
+## ▶ [Install CHOMP + ORB — one click](https://raw.githubusercontent.com/willhoop/chomp/main/app/plugin/chomp-bring4.user.js)
+
+One file gives you **both** the bring/lead panel **and** the minimizable ORB damage calculator.
+
+1. Install [Tampermonkey](https://www.tampermonkey.net/) (one time, any browser).
+2. Click the big link above → Tampermonkey opens an **Install** page → click **Install**.
+3. Open a Champions battle. Done. It auto-updates itself forever — no pasting, no folders.
+
+_(That link is the raw userscript. Tampermonkey recognizes `.user.js` and installs it directly.)_
+
+---
+
 **Platform: Pokémon Showdown** (`play.pokemonshowdown.com`). CHOMP is a **Tampermonkey userscript**
 that runs inside the Showdown battle client. It works on both the classic and BETA clients, and only
 activates on the format **[Gen 9] Champions VGC 2026 Reg M-B**. It reads only what the Showdown page
