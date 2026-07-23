@@ -409,7 +409,7 @@ function getBattle(){try{
 function readTeamsFromDOM(){try{
   const txt=(document.body&&document.body.innerText)||'';
   const me=((window.app&&app.user&&app.user.get&&app.user.get('name'))||(window.PS&&PS.user&&PS.user.name)||'').trim();
-  const re=/([^\n]{1,30}?)'s team:\s*([^\n]+)/g; let m; const teams=[];
+  const re=/([^\n]{1,30}?)[’‘'`]s team:\s*([^\n]+)/gi; let m; const teams=[];
   while((m=re.exec(txt))!==null){ const list=m[2].split('/').map(s=>s.trim()).filter(Boolean); if(list.length>=3)teams.push({who:m[1].trim(),list}); }
   if(teams.length<2)return null;
   let mineT=teams.find(t=>me&&t.who.toLowerCase()===me.toLowerCase())||teams[0];
