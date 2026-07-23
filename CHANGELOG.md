@@ -11,6 +11,17 @@ silently rewritten; what changed and why is stated. The top version here must ma
 
 ---
 
+## [2.4.0] — 2026-07-22
+
+### Added
+- **ABRA meta model wired into the pick (the flow-back loop).** The built plugin now embeds
+  `CHOMP_META`, the ladder usage model produced by the separate **ABRA** project. The opponent's
+  likely four is computed matchup-aware — `bring4(theirSix, yourSix)`, their best four *against your
+  six* — with ABRA's ladder bring rate as a fallback prior only. CHOMP then optimises your bring
+  against that likely four instead of all six. Pinned by `tests/test-meta-flow.js` (5 tests) and
+  verified on a real battle. Because CHOMP auto-updates from GitHub, a fresher ABRA model reaches the
+  live plugin with no manual step.
+
 ## [2.3.0] — 2026-07-22
 
 ### Added
