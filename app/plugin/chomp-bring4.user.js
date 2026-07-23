@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.4
+// @version      2.5
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
 // @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
@@ -602,13 +602,34 @@ function mkMon(species, itemOverride){ const m=ORB.mons[idn(species)]; if(!m) re
 // ---- read BOTH teams from the live Showdown battle (open team sheets in Champions) ----
 function readTeams(){
   try{
-    const app = window.app; const room = app && app.curRoom; const b = room && room.battle;
-    if(!b) return null;
-    const side = s => (s && s.pokemon ? s.pokemon.map(p => idn((p.speciesForme||p.species||p.name||'').split(',')[0])).filter(Boolean) : []);
-    const you = side(b.mySide||b.nearSide||b.p1);
-    const them = side((b.mySide===b.p1?b.p2:b.p1) || b.farSide || b.p2);
-    if(!you.length && !them.length) return null;
-    return {you:[...new Set(you)].slice(0,6), them:[...new Set(them)].slice(0,6)};
+    const app=window.app, room=app&&app.curRoom, b=room&&room.battle;
+    if(b){
+      // PRIMARY: |poke| lines in the battle log/stepQueue (present from team preview on)
+      const q=b.stepQueue||b.log||[]; const poke={p1:[],p2:[]}, names={p1:'',p2:''};
+      for(const l0 of q){ const line=''+l0; let m;
+        if(m=line.match(/^\|player\|(p[12])\|([^|]*)/)){ if(m[2])names[m[1]]=m[2]; }
+        else if(m=line.match(/^\|poke\|(p[12])\|([^,|]+)/)){ poke[m[1]].push(idn(m[2])); } }
+      if(poke.p1.length||poke.p2.length){
+        const me=((app&&app.user&&app.user.get&&app.user.get('name'))||'').trim().toLowerCase();
+        let mine='p1'; if(me&&(names.p2||'').toLowerCase()===me)mine='p2';
+        else if(b.mySide&&b.mySide.id&&(b.mySide.id==='p1'||b.mySide.id==='p2'))mine=b.mySide.id;
+        const them=mine==='p1'?'p2':'p1';
+        const you=[...new Set(poke[mine])].slice(0,6), th=[...new Set(poke[them])].slice(0,6);
+        if(you.length||th.length) return {you, them:th};
+      }
+      const side=s=>(s&&s.pokemon?s.pokemon.map(p=>idn((p.speciesForme||p.species||p.name||'').split(',')[0])).filter(Boolean):[]);
+      const you=side(b.mySide||b.nearSide||b.p1), th=side((b.mySide===b.p1?b.p2:b.p1)||b.farSide||b.p2);
+      if(you.length||th.length) return {you:[...new Set(you)].slice(0,6), them:[...new Set(th)].slice(0,6)};
+    }
+    // FALLBACK: page text "X's team: a / b / c"
+    const txt=(document.body&&document.body.innerText)||'';
+    const re=/([^\n]{1,30}?)['’‘`]s team:\s*([^\n]+)/gi; let m; const teams=[];
+    while((m=re.exec(txt))!==null){ const who=m[1].trim().toLowerCase();
+      const list=m[2].split('/').map(x=>idn(x.trim())).filter(Boolean); if(list.length>=3)teams.push({who,list}); }
+    if(teams.length>=2){ const me=((window.app&&app.user&&app.user.get&&app.user.get('name'))||'').trim().toLowerCase();
+      const mineT=teams.find(t=>me&&t.who===me)||teams[0], foeT=teams.find(t=>t!==mineT);
+      return {you:mineT.list.slice(0,6), them:foeT.list.slice(0,6)}; }
+    return null;
   }catch(e){ return null; }
 }
 
@@ -657,5 +678,5 @@ function renderMoves(){
   });
   out.innerHTML='Pick a move above.';
 }
-setInterval(refresh, 1500);
+build(); refresh(); setInterval(refresh, 1500);
 })();
