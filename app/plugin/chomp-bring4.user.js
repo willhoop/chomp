@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.6
+// @version      2.7
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
 // @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
@@ -582,22 +582,78 @@ const nice = s => (s||'').replace(/([a-z])([A-Z])/g,'$1 $2').replace(/\b\w/g,c=>
 
 // ---- damage (same formula family as MEDICHAM v3) ----
 function eff(t, dtypes){ let e=1; const r=ORB.C[t]; if(!r) return 1; for(const d of dtypes){ if(r[d]!=null) e*=r[d]; } return e; }
-function dmgRange(att, def, mv){
+const ORB_SPREAD=new Set(['earthquake','rockslide','heatwave','blizzard','muddywater','dazzlinggleam','hypervoice','makeitrain','icywind','snarl','bulldoze','discharge','lavaplume','eruption','waterspout','surf','sludgewave','breakingswipe','glaciallance','astralbarrage','precipiceblades','sparklingaria','electroweb','strugglebug','poweruppunch']);
+const ORB_BM=s=>{s=Math.max(-6,Math.min(6,s||0));return s>=0?(2+s)/2:2/(2-s);};
+function dmgRange(att, def, mv, field){
+  field=field||{};
   if(!mv||!mv.bp) return null;
   const phys = mv.c==='P';
   let A = phys?att.st.at:att.st.sa, D = phys?def.st.df:def.st.sd;
+  const ab=att.boosts||{}, db=def.boosts||{};
+  A=Math.floor(A*ORB_BM(phys?ab.at:ab.sa));
+  D=Math.floor(D*ORB_BM(phys?db.df:db.sd));
   if(phys && att.item==='choiceband') A=Math.floor(A*1.5);
   if(!phys && att.item==='choicespecs') A=Math.floor(A*1.5);
   if(!phys && def.item==='assaultvest') D=Math.floor(D*1.5);
+  if((att.ab==='hugepower'||att.ab==='purepower')&&phys) A*=2;
+  if(att.ab==='guts'&&phys&&att.status&&att.status!=='none') A=Math.floor(A*1.5);
+  if(att.ab==='solarpower'&&!phys&&field.weather==='sun') A=Math.floor(A*1.5);
+  if(phys&&att.ab==='swordofruin') D=Math.floor(D*0.75);
+  if(!phys&&att.ab==='beadsofruin') D=Math.floor(D*0.75);
+  if(phys&&def.ab==='tabletsofruin') A=Math.floor(A*0.75);
+  if(!phys&&def.ab==='vesselofruin') A=Math.floor(A*0.75);
   let base = Math.floor(Math.floor(22*mv.bp*A/D)/50)+2;
+  if(field.spread) base=Math.floor(base*0.75);
+  if(field.weather==='rain'){ if(mv.t==='Water')base=Math.floor(base*1.5); if(mv.t==='Fire')base=Math.floor(base*0.5); }
+  if(field.weather==='sun'){ if(mv.t==='Fire')base=Math.floor(base*1.5); if(mv.t==='Water')base=Math.floor(base*0.5); }
+  if(field.terrain==='electric'&&mv.t==='Electric') base=Math.floor(base*1.3);
+  if(field.terrain==='grassy'&&mv.t==='Grass') base=Math.floor(base*1.3);
+  if(field.terrain==='psychic'&&mv.t==='Psychic') base=Math.floor(base*1.3);
+  if(field.terrain==='misty'&&mv.t==='Dragon') base=Math.floor(base*0.5);
   const e = eff(mv.t, def.t); if(e===0) return {min:0,max:0,eff:0};
   const stab = att.t.includes(mv.t)?1.5:1;
+  const burn = (phys&&att.status==='brn'&&att.ab!=='guts')?0.5:1;
   const lo = att.item==='lifeorb'?1.3:1;
-  const roll = r => { let d=Math.floor(base*r/100); if(stab!==1)d=Math.floor(d*stab); d=Math.floor(d*e); if(lo>1)d=Math.floor(d*lo); return d; };
+  const hh = field.helpingHand?1.5:1;
+  let scr=1; if(phys&&field.reflect) scr=field.spread?2732/4096:0.5; if(!phys&&field.lightscreen) scr=field.spread?2732/4096:0.5;
+  const roll = r => { let d=Math.floor(base*r/100); if(stab!==1)d=Math.floor(d*stab); d=Math.floor(d*e); if(burn<1)d=Math.floor(d*burn); if(scr!==1)d=Math.floor(d*scr); if(lo>1)d=Math.floor(d*lo); if(hh>1)d=Math.floor(d*hh); return d; };
   return {min:roll(85), max:roll(100), eff:e};
 }
+function liveMon(species){
+  const o={stats:null,item:null,ability:null,status:null,boosts:{},helpingHand:false};
+  try{
+    const b=window.app&&app.curRoom&&app.curRoom.battle; if(!b)return o;
+    for(const p of (b.myPokemon||[])){ if(idn(((p.speciesForme||p.details||'')+'').split(',')[0])===species){
+      if(p.stats)o.stats={at:p.stats.atk,df:p.stats.def,sa:p.stats.spa,sd:p.stats.spd,hp:p.maxhp||0};
+      o.item=idn(p.item||''); o.ability=idn(p.ability||p.baseAbility||''); break; } }
+    for(const sd of [b.nearSide,b.farSide,b.mySide,b.p1,b.p2]){ if(!sd||!sd.active)continue;
+      for(const ap of sd.active){ if(!ap)continue; if(idn(((ap.speciesForme||ap.name||'')+'').split(',')[0])!==species)continue;
+        if(ap.boosts)o.boosts={at:ap.boosts.atk||0,df:ap.boosts.def||0,sa:ap.boosts.spa||0,sd:ap.boosts.spd||0};
+        if(ap.status)o.status=idn(ap.status);
+        if(!o.item&&ap.item)o.item=idn(ap.item);
+        if(!o.ability&&ap.ability)o.ability=idn(ap.ability);
+        if(ap.volatiles&&ap.volatiles.helpinghand)o.helpingHand=true;
+        if((!o.stats||!o.stats.hp)&&ap.maxhp)o.stats=Object.assign(o.stats||{},{hp:ap.maxhp});
+      } }
+  }catch(e){}
+  return o;
+}
+function readField(){
+  const f={weather:'',terrain:'',reflect:false,lightscreen:false};
+  try{
+    const b=window.app&&app.curRoom&&app.curRoom.battle; if(!b)return f;
+    const w=idn((b.weather||'')+''); if(/rain|drizzle|primordial/.test(w))f.weather='rain'; else if(/sun|drought|desolate|harsh/.test(w))f.weather='sun'; else if(/sand/.test(w))f.weather='sand'; else if(/snow|hail/.test(w))f.weather='snow';
+    const terr=idn(((b.field&&b.field.terrain)||'')+''); if(/electric/.test(terr))f.terrain='electric'; else if(/grass/.test(terr))f.terrain='grassy'; else if(/psychic/.test(terr))f.terrain='psychic'; else if(/misty/.test(terr))f.terrain='misty';
+    const foe=b.farSide||((b.mySide===b.p1)?b.p2:b.p1);
+    if(foe&&foe.sideConditions){ f.reflect=!!foe.sideConditions.reflect; f.lightscreen=!!foe.sideConditions.lightscreen; }
+    return f;
+  }catch(e){return f;}
+}
 function mkMon(species, itemOverride){ const m=ORB.mons[idn(species)]; if(!m) return null;
-  return {name:idn(species), t:m.t.slice(), st:{...m.st}, item:itemOverride||m.item||'', ab:m.ab||'', mv:m.mv.slice()}; }
+  const L=liveMon(idn(species));
+  const st=(L.stats&&L.stats.at)?{at:L.stats.at,df:L.stats.df,sa:L.stats.sa,sd:L.stats.sd,hp:L.stats.hp||m.st.hp}:{...m.st};
+  if(L.stats&&L.stats.hp)st.hp=L.stats.hp;
+  return {name:idn(species), t:m.t.slice(), st, item:idn(itemOverride||L.item||m.item||''), ab:idn(L.ability||m.ab||''), status:L.status||null, boosts:L.boosts||{}, helpingHand:!!L.helpingHand, mv:m.mv.slice()}; }
 
 // ---- read BOTH teams from the live Showdown battle (open team sheets in Champions) ----
 function readTeams(){
@@ -680,10 +736,14 @@ function renderMoves(){
   const mv=document.getElementById('orb-moves'); const MVLIST=realMoves(att.name)||att.mv;
   mv.innerHTML = MVLIST.map(id=>{const m=ORB.moves[id]; if(!m||!m.bp) return ''; return `<button data-mv="${id}" style="cursor:pointer;border:1px solid #b7c0d8;background:#eef;border-radius:5px;padding:3px 7px">${nice(id)}</button>`;}).join('') || '<i>no damaging moves in data</i>';
   mv.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
-    const m=ORB.moves[btn.dataset.mv]; const d=dmgRange(att,def,m); if(!d){out.textContent='—';return;}
+    const m=ORB.moves[btn.dataset.mv]; const field=readField(); field.spread=ORB_SPREAD.has(btn.dataset.mv); field.helpingHand=att.helpingHand;
+    const d=dmgRange(att,def,m,field); if(!d){out.textContent='—';return;}
     const hp=def.st.hp, pMin=Math.round(100*d.min/hp), pMax=Math.round(100*d.max/hp);
     const ko = d.min>=hp?'guaranteed OHKO':(d.max>=hp?'possible OHKO':'no KO');
-    out.innerHTML=`${nice(att.name)}'s <b>${nice(btn.dataset.mv)}</b> vs ${nice(def.name)}:<br><span style="font-size:15px;color:${pMax>=100?'#b4432f':'#26355a'}">${d.min}–${d.max}</span> (${pMin}–${pMax}%) · <b>${ko}</b>${d.eff!==1?` · ${d.eff>1?'super effective':'not very effective'}`:''}`;
+    const cds=[]; const bA=att.boosts||{}, bD=def.boosts||{}; const oB=m.c==='P'?bA.at:bA.sa, dB=m.c==='P'?bD.df:bD.sd;
+    if(oB)cds.push((oB>0?'+':'')+oB+(m.c==='P'?' Atk':' SpA')); if(dB)cds.push((dB>0?'+':'')+dB+(m.c==='P'?' Def':' SpD'));
+    if(field.weather)cds.push(field.weather); if(field.terrain)cds.push(field.terrain); if(field.helpingHand)cds.push('Helping Hand'); if(field.spread)cds.push('spread'); if(field.reflect&&m.c==='P')cds.push('Reflect'); if(field.lightscreen&&m.c==='S')cds.push('Light Screen');
+    out.innerHTML=`${nice(att.name)}'s <b>${nice(btn.dataset.mv)}</b> vs ${nice(def.name)}:<br><span style="font-size:15px;color:${pMax>=100?'#b4432f':'#26355a'}">${d.min}–${d.max}</span> (${pMin}–${pMax}%) · <b>${ko}</b>${d.eff!==1?` · ${d.eff>1?'super effective':'not very effective'}`:''}${cds.length?`<br><span style="color:#5b616b;font-size:11px">applied: ${cds.join(' · ')}</span>`:''}`;
   });
   out.innerHTML='Pick a move above.';
 }
