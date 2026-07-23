@@ -69,11 +69,25 @@ function normSF(sf){ const f=findMon(sf); return f?f.key:null; }
 const METAB={}; try{ (CHOMP_META.threats||[]).forEach(t=>METAB[t.sp]={bring:t.bringRate||0,lead:t.leadRate||0,team:t.teamRate||0}); }catch(e){}
 function metaBring(k){ return (METAB[k]&&METAB[k].bring)||0; }
 function metaLead(k){ return (METAB[k]&&METAB[k].lead)||0; }
-// the 4 of the opponent's 6 the ladder is most likely to actually bring
-function likelyFoe4(foe6){
+// Which 4 will the opponent bring? A smart opponent brings the 4 of their 6 that
+// perform BEST AGAINST YOUR SIX — not their generically-most-brought 4. CHOMP's
+// own engine already answers "best 4 vs a team", so we run it from their side:
+// bring4(theirSix, mySix) = their optimal bring against you. ABRA's ladder bring
+// rate is a fallback prior only (used when the engine can't decide / no team given).
+const _id=x=>String(x).toLowerCase().replace(/[^a-z0-9]/g,'');
+function likelyFoe4(foe6, my6){
+  if(foe6.length<=4) return foe6;
+  if(my6 && my6.length>=1){
+    try{
+      const fb=bring4(foe6, my6);                    // opponent optimises vs YOUR six
+      const want=new Set((fb.bring||[]).map(_id));
+      const pick=foe6.filter(m=>want.has(_id(m.name||m.key)));
+      if(pick.length===4) return pick;               // matchup-aware answer
+    }catch(e){}
+  }
   const scored=foe6.map(m=>({m,b:metaBring(m.key!==undefined?m.key:normSF(m.name||m))}));
-  if(scored.every(x=>x.b===0)) return foe6;           // no meta yet -> use all six
-  return scored.sort((a,b)=>b.b-a.b).slice(0,4).map(x=>x.m);
+  if(scored.some(x=>x.b>0)) return scored.sort((a,b)=>b.b-a.b).slice(0,4).map(x=>x.m); // ABRA prior
+  return foe6;                                        // nothing to go on -> all six
 }
 
 /* ================= Showdown bridge ================= */
@@ -197,7 +211,7 @@ function render(){
   if(key===lastKey)return; lastKey=key;
   const {my6,foe6,usedReal}=buildSides(t);
   if(my6.length<4||foe6.length<4){body.innerHTML='<div class="v2wait">Reading teams…</div>';lastKey='';return;}
-  const foeLikely=(foe6.length>4)?likelyFoe4(foe6):foe6;   // ABRA: who they'll actually bring
+  const foeLikely=(foe6.length>4)?likelyFoe4(foe6,my6):foe6;   // ABRA: who they'll actually bring
   const r=bring4(my6,foeLikely);
   let h='<div class="v2k">LEAD</div><div class="v2v">'+r.lead.join(' + ')+'</div>';
   h+='<div class="v2k">BRING</div><div class="v2v">'+r.bring.join(' · ')+'</div>';
