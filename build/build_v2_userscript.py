@@ -30,7 +30,7 @@ engine=model[i0:i1].strip()
 HEADER='''// ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.2
+// @version      2.3
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
 // @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
@@ -155,22 +155,16 @@ let panel;
 function ensure(){
   if(panel)return panel;
   panel=document.createElement('div'); panel.id='olv2';
-  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">v2.2</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
+  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">v2.3</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
   document.body.appendChild(panel);
   const css=document.createElement('style'); css.textContent=`
   #olv2{position:fixed;top:64px;right:12px;width:288px;z-index:99999;background:#0f1216;border:1px solid #2a2f3a;border-radius:10px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#e6e9ef;box-shadow:0 8px 30px rgba(0,0,0,.55)}
   #olv2h{font-size:10px;letter-spacing:1px;font-weight:700;color:#9aa1ad;padding:9px 11px;border-bottom:1px solid #23272f;display:flex;justify-content:space-between;cursor:move;user-select:none}
   #olv2m{cursor:pointer;color:#5b6270}
-  #olv2b{padding:11px} #olv2.min #olv2b{display:none}
-  .v2lead{font-size:15px;font-weight:800;color:#fff;margin-bottom:2px}
-  .v2br{font-size:12px;color:#c3c9d4;margin-bottom:4px}
-  .v2wx{font-size:11px;color:#7fb5ff;margin-bottom:8px}
-  .v2row{display:flex;align-items:center;gap:7px;font-size:11px;margin:3px 0}
-  .v2row .fn{flex:1;color:#9aa1ad;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .v2bar{width:46px;height:6px;border-radius:4px;background:#1c2028;overflow:hidden;flex:0 0 46px}
-  .v2bar>span{display:block;height:100%}
-  .v2ans{color:#e6e9ef;flex:0 0 92px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .v2note{font-size:10px;color:#e5a54b;margin-top:8px;line-height:1.35}
+  #olv2b{padding:9px 11px} #olv2.min #olv2b{display:none}
+  .v2k{font-size:9px;font-weight:700;letter-spacing:1.5px;color:#6c7480;margin-top:6px}
+  .v2k:first-child{margin-top:0}
+  .v2v{font-size:14px;font-weight:700;color:#fff;line-height:1.25}
   .v2wait{font-size:12px;color:#6c7480}`;
   document.head.appendChild(css);
   const h=panel.querySelector('#olv2h');let dx=0,dy=0,drag=false;
@@ -191,11 +185,8 @@ function render(){
   const {my6,foe6,usedReal}=buildSides(t);
   if(my6.length<4||foe6.length<4){body.innerHTML='<div class="v2wait">Reading teams…</div>';lastKey='';return;}
   const r=bring4(my6,foe6);
-  let h='<div class="v2lead">'+r.lead.join(' + ')+'</div>';
-  h+='<div class="v2br">Bring: '+r.bring.join(', ')+'</div>';
-  h+='<div class="v2wx">Weather: '+r.weather+'  ·  score '+r.score+'  ·  '+usedReal+'/6 real sets</div>';
-  r.detail.forEach(d=>{h+='<div class="v2row"><span class="fn">'+d.foe+'</span><span class="v2bar"><span style="width:'+Math.max(8,Math.min(100,d.myHit))+'%;background:'+col(d.myHit)+'"></span></span><span class="v2ans">'+d.answer+' '+d.myHit+'%</span></div>';});
-  if(r.notes&&r.notes.length)h+='<div class="v2note">▲ '+r.notes.join('<br>▲ ')+'</div>';
+  let h='<div class="v2k">LEAD</div><div class="v2v">'+r.lead.join(' + ')+'</div>';
+  h+='<div class="v2k">BRING</div><div class="v2v">'+r.bring.join(' · ')+'</div>';
   body.innerHTML=h;
 }
 /* ===== auto-close the News popup + collapse the rooms (Hide) — one-shot Hide so it can't loop ===== */

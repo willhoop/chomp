@@ -11,6 +11,17 @@ silently rewritten; what changed and why is stated. The top version here must ma
 
 ---
 
+## [2.3.0] — 2026-07-22
+
+### Changed
+- **Panel stripped to the decision only.** It now shows two lines — `LEAD` (the two to send out) and
+  `BRING` (the four to pick) — and nothing else. Removed the per-Pokémon damage bars and percentages,
+  the weather/score line, and the `6/6 real sets` line, on the user's request for the smallest
+  possible panel. The full damage math still runs underneath to choose the four and the two; it is
+  simply no longer printed.
+
+---
+
 ## [2.2.0] — 2026-07-22
 
 ### Added
