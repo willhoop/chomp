@@ -13,6 +13,13 @@ silently rewritten; what changed and why is stated. The top version here must ma
 
 ## [2.3.0] — 2026-07-22
 
+### Added
+- **Operation Ladder foundation — ladder-wide meta model.** `build/meta-ingest.js` pulls public
+  replays for the format (any players, paginated) and aggregates both sides into `data/meta-usage.json`:
+  team%, bring%, lead% and win% per species. Tested on 302 teams from 151 real ladder replays; the
+  result reproduces the hand-curated threat list. This is the shared data layer that grows unattended
+  and will feed the pick-4, the dashboard, and the team optimiser.
+
 ### Changed
 - **Panel stripped to the decision only.** It now shows two lines — `LEAD` (the two to send out) and
   `BRING` (the four to pick) — and nothing else. Removed the per-Pokémon damage bars and percentages,

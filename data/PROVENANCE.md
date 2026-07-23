@@ -16,3 +16,12 @@ This file records where each dataset comes from, when it was captured, and how a
 1. Record the capture date whenever a dataset is refreshed.
 2. If two sources disagree, the higher-authority source wins. See `CLAUDE.md`.
 3. Never hand-edit derived data. Re-capture from the source and rebuild.
+
+## meta-usage.json — ladder-wide usage model (Operation Ladder foundation)
+- **Source:** public replays from the Pokémon Showdown replay API,
+  `search.json?format=gen9championsvgc2026regmb` (paginated), then each `<id>.log`.
+- **Method:** `build/meta-ingest.js` aggregates BOTH players in every public replay — team%,
+  bring%, lead%, and win% per species. Species with n<3 are dropped.
+- **Regenerate:** `node build/meta-ingest.js data/meta-usage.json` (grows unattended as the ladder plays).
+- **Validation:** the top of the table reproduces the independently hand-curated `docs/reg-mb-threat-list.md`
+  (Basculegion / Whimsicott / Garchomp / Kingambit), which used a separate 141k-battle dataset.
