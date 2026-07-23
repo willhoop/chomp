@@ -14,13 +14,16 @@ silently rewritten; what changed and why is stated. The top version here must ma
 ## [2.4.0] — 2026-07-22
 
 ### Added
-- **ABRA meta model wired into the pick (the flow-back loop).** The built plugin now embeds
-  `CHOMP_META`, the ladder usage model produced by the separate **ABRA** project. The opponent's
-  likely four is computed matchup-aware — `bring4(theirSix, yourSix)`, their best four *against your
-  six* — with ABRA's ladder bring rate as a fallback prior only. CHOMP then optimises your bring
-  against that likely four instead of all six. Pinned by `tests/test-meta-flow.js` (5 tests) and
-  verified on a real battle. Because CHOMP auto-updates from GitHub, a fresher ABRA model reaches the
-  live plugin with no manual step.
+- **ABRA meta model embedded in the plugin (the flow-back loop).** The built plugin now carries
+  `CHOMP_META`, the ladder usage model from the separate **ABRA** project, and can compute the
+  opponent's *likely* four — their best four against your six (`bring4(theirSix, yourSix)`), ABRA
+  bring-rate as fallback prior. This is **advisory intel**, not a constraint on your pick.
+- The bring itself **covers the opponent's whole six**, deliberately. You cannot know which four
+  they will bring, so CHOMP picks the four that answer all six — coverage over a gamble on a
+  prediction. ABRA tells you what they will *probably* do; the pick keeps you safe if they don't.
+
+Pinned by `tests/test-meta-flow.js` (5 tests) and verified on a real battle. Because CHOMP
+auto-updates from GitHub, a fresher ABRA model reaches the live plugin with no manual step.
 
 ## [2.3.0] — 2026-07-22
 
