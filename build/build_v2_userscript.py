@@ -21,6 +21,9 @@ def grab(name):
 
 MONS=grab('MONS'); MOVES=grab('MOVES'); C=grab('C')
 LEGAL=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/data/champions-legal-moves.json',encoding='utf8').read()
+import os
+_metap='/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/ABRA/data/meta-usage.json'
+META=open(_metap,encoding='utf8').read() if os.path.exists(_metap) else '{"threats":[]}'
 
 # engine = champ-model.js from `const byName` up to (excluding) module.exports, minus the fs loader
 i0=model.index('const FORMAT')   # was 'const byName', which dropped FORMAT/isBannedItem/canLearn
@@ -30,7 +33,7 @@ engine=model[i0:i1].strip()
 HEADER='''// ==UserScript==
 // @name         CHOMP — Bring 4 (Real Damage Model)
 // @namespace    willhoop.vgc
-// @version      2.3
+// @version      2.4
 // @description  Damage-calc bring/lead for Champions Reg M-B. Reads your real saved sets, infers the foe, real KO math + weather.
 // @author       willhoop
 // @match        https://play.pokemonshowdown.com/*
@@ -42,8 +45,8 @@ HEADER='''// ==UserScript==
 // ==/UserScript==
 (function(){
 "use strict";
-const MONS=%s,MOVES=%s,C=%s,CHOMP_LEGAL=%s;
-'''%(MONS,MOVES,C,LEGAL)
+const MONS=%s,MOVES=%s,C=%s,CHOMP_LEGAL=%s,CHOMP_META=%s;
+'''%(MONS,MOVES,C,LEGAL,META)
 
 BRIDGE=r'''
 /* ================= inference tables ================= */
@@ -62,6 +65,16 @@ function autoFoe(key){
   return mon.name+' @ '+item+'\nAbility: '+(ABIL[key]||'Pressure')+'\nLevel: 50\n'+nat+' Nature\nEVs: '+sp+'\n'+moves.map(x=>'- '+x).join('\n');
 }
 function normSF(sf){ const f=findMon(sf); return f?f.key:null; }
+/* ---- ABRA meta: what the ladder actually brings/leads (fed from the ABRA project) ---- */
+const METAB={}; try{ (CHOMP_META.threats||[]).forEach(t=>METAB[t.sp]={bring:t.bringRate||0,lead:t.leadRate||0,team:t.teamRate||0}); }catch(e){}
+function metaBring(k){ return (METAB[k]&&METAB[k].bring)||0; }
+function metaLead(k){ return (METAB[k]&&METAB[k].lead)||0; }
+// the 4 of the opponent's 6 the ladder is most likely to actually bring
+function likelyFoe4(foe6){
+  const scored=foe6.map(m=>({m,b:metaBring(m.key!==undefined?m.key:normSF(m.name||m))}));
+  if(scored.every(x=>x.b===0)) return foe6;           // no meta yet -> use all six
+  return scored.sort((a,b)=>b.b-a.b).slice(0,4).map(x=>x.m);
+}
 
 /* ================= Showdown bridge ================= */
 function getBattle(){try{
@@ -155,7 +168,7 @@ let panel;
 function ensure(){
   if(panel)return panel;
   panel=document.createElement('div'); panel.id='olv2';
-  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">v2.3</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
+  panel.innerHTML='<div id="olv2h">CHOMP — BRING 4 <span style="color:#5b616b;font-weight:400">v2.4</span> <span id="olv2m">–</span></div><div id="olv2b"></div>';
   document.body.appendChild(panel);
   const css=document.createElement('style'); css.textContent=`
   #olv2{position:fixed;top:64px;right:12px;width:288px;z-index:99999;background:#0f1216;border:1px solid #2a2f3a;border-radius:10px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#e6e9ef;box-shadow:0 8px 30px rgba(0,0,0,.55)}
@@ -184,7 +197,8 @@ function render(){
   if(key===lastKey)return; lastKey=key;
   const {my6,foe6,usedReal}=buildSides(t);
   if(my6.length<4||foe6.length<4){body.innerHTML='<div class="v2wait">Reading teams…</div>';lastKey='';return;}
-  const r=bring4(my6,foe6);
+  const foeLikely=(foe6.length>4)?likelyFoe4(foe6):foe6;   // ABRA: who they'll actually bring
+  const r=bring4(my6,foeLikely);
   let h='<div class="v2k">LEAD</div><div class="v2v">'+r.lead.join(' + ')+'</div>';
   h+='<div class="v2k">BRING</div><div class="v2v">'+r.bring.join(' · ')+'</div>';
   body.innerHTML=h;
