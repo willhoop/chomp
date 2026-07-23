@@ -1,5 +1,11 @@
 # CHOMP
 ### Champions Head-to-head Optimizer for Matchup Prediction
+
+**Platform: Pokémon Showdown** (`play.pokemonshowdown.com`). CHOMP is a **Tampermonkey userscript**
+that runs inside the Showdown battle client. It works on both the classic and BETA clients, and only
+activates on the format **[Gen 9] Champions VGC 2026 Reg M-B**. It reads only what the Showdown page
+already shows you (the two teams at preview) — it does not automate play or touch your account.
+
 A real-time team-preview assistant for **Pokémon Champions VGC (Reg M-B)** on Pokémon Showdown.
 
 At team preview you get ~30 seconds to decide **which 4 of your 6 to bring and which 2 to lead**. CHOMP answers that with real damage math — not type-chart intuition — in under 50 ms, in your browser.
