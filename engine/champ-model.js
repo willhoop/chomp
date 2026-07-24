@@ -259,6 +259,17 @@ function moveDamage(att,def,mv,ctx){
   if(mv.t==='Ground' && airborne(def) && !ctx.gravity && (mv.n||'').toLowerCase()!=='thousand arrows') return {pct:0,minPct:0,pKO:0,move:mv.n};
   // [FIX C2] Intimidate now actually fires — from the defending mon's ability (was dead ctx flag)
   if(phys && (def.ability==='intimidate')) A=Math.floor(A*stageBoostMul(-1));
+  /* Stat stages. stageBoostMul already existed but was only reachable via Speed Boost and
+     Intimidate, so a calculator that has a "setup / sweeper" role in its own taxonomy could not
+     represent +2 from Swords Dance, Nasty Plot or Calm Mind - the single most important thing a
+     sweeper does. ctx.boosts applies to the ATTACKER, ctx.dboosts to the DEFENDER, both as stage
+     numbers in [-6,+6], e.g. {atk:2} or {spd:1}. A critical hit ignores the defender's positive
+     defensive stages and the attacker's negative offensive ones, as in game. */
+  const _clamp=v=>Math.max(-6,Math.min(6,+v||0));
+  const aSt=_clamp((ctx.boosts||{})[phys?'atk':'spa']);
+  const dSt=_clamp((ctx.dboosts||{})[phys?'def':'spd']);
+  if(aSt) A=Math.floor(A*stageBoostMul(ctx.crit? Math.max(0,aSt) : aSt));
+  if(dSt) D=Math.floor(D*stageBoostMul(ctx.crit? Math.min(0,dSt) : dSt));
   const e=eff(mv.t, def.types); if(e===0)return {pct:0,minPct:0,pKO:0,move:mv.n};
   // STAB
   let stab=1; if(att.types.includes(mv.t)) stab = att.ability==='adaptability'?2:1.5;
