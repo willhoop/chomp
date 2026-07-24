@@ -174,17 +174,49 @@ function parsePaste(text){
 }
 
 // ---- build a battle-ready mon (stats + typing + flags) ----
-const MEGA_TYPE = { // megas whose typing/ability differ (verified set from prior work)
-  'staraptor':{t:['Fighting','Flying'],ab:'Contrary'},
-  'clefable':{t:['Fairy','Flying']},
-};
+/* Mega formes, keyed by the STONE.
+ *
+ * This used to be a two-entry hardcoded table (staraptor, clefable) that swapped TYPES only. Every
+ * other mega was therefore computed with its BASE form's stats: Mega Charizard Y attacked with
+ * Charizard's 109 Special Attack instead of 159, and Mega Tyranitar defended with 110 Defence
+ * instead of 150 - silently, on some of the most common Pokemon in the format (Charizard-Mega-Y
+ * alone appears in ~900 stored sets).
+ *
+ * data/mega-formes.json now carries the real base stats, typing and ability for all 95 stones,
+ * sourced from Showdown's own pokedex (the data the server runs this format on). It is keyed by the
+ * stone because the stone decides the forme - Charizardite X and Y are different Pokemon.
+ *
+ * The declared ability still wins if the set names one, so a paste that says "Ability: Drought" is
+ * respected; the table only fills in what the set did not state. */
+let MEGA_FORMES = null;
+function megaFormes(){
+  if(MEGA_FORMES) return MEGA_FORMES;
+  MEGA_FORMES = {};
+  try{
+    const j = JSON.parse(fs.readFileSync(__dirname + '/../data/mega-formes.json','utf8'));
+    MEGA_FORMES = j.by_item || {};
+  }catch(e){ /* absent -> behave as before */ }
+  return MEGA_FORMES;
+}
 function buildMon(set){
-  const mon=set.base, bs=mon.bs, nat=set.nature||'Hardy';
+  const mon=set.base, nat=set.nature||'Hardy';
   let item=(set.item||'').toLowerCase(); if(isBannedItem(item)){ set.itemIllegal=item; item=''; }   // [FIX C6] enforce format item legality
-  const ab=(set.ability||'').toLowerCase();
+  let ab=(set.ability||'').toLowerCase();
   let types=mon.t.slice();
-  const isMega = item.includes('ite') && !item.includes('white') || /-mega/i.test(set.species);
-  if(MEGA_TYPE[set.key]&&isMega)types=MEGA_TYPE[set.key].t.slice();
+  let bs=mon.bs;
+  /* Holding the stone is not the same as having used it. Before it megas, the Pokemon has its BASE
+     stats, base typing and base ability - Charizard is Blaze with 109 Special Attack until the turn
+     it becomes Drought with 159. We model it as already megad because in practice a mega happens on
+     turn one (it is free and there is no reason to wait), so it is the state that holds for almost
+     the whole battle. Pass premega:true on the set to get the un-evolved numbers instead. */
+  const holdsStone = item.includes('ite') && !item.includes('white') || /-mega/i.test(set.species);
+  const isMega = holdsStone && !set.premega;
+  const mf = isMega ? megaFormes()[item.replace(/[^a-z0-9]/g,'')] : null;
+  if(mf){
+    bs    = mf.bs || bs;                       // the mega's REAL base stats
+    types = (mf.t && mf.t.length) ? mf.t.slice() : types;
+    if(!ab && mf.ab) ab = mf.ab.toLowerCase(); // fill the ability only if the set did not name one
+  }
   const st={
     hp: hpL50(bs.hp,set.sp.hp),
     atk: statL50(bs.atk,set.sp.atk,natMul(nat,'atk')),
@@ -193,8 +225,8 @@ function buildMon(set){
     spd: statL50(bs.spd,set.sp.spd,natMul(nat,'spd')),
     spe: statL50(bs.spe,set.sp.spe,natMul(nat,'spe')),
   };
-  return { key:set.key, name:mon.name, types, st, item, ability:ab, moves:set.moves.slice(),
-           sets:set, isMega, setsWeather: WEATHER_SETTER[ab]||null };
+  return { key:set.key, name:(mf&&mf.name)||mon.name, types, st, item, ability:ab, moves:set.moves.slice(),
+           sets:set, isMega, holdsStone, megaForme:(mf&&mf.forme)||null, setsWeather: WEATHER_SETTER[ab]||null };
 }
 
 // ---- speed with modifiers ----
