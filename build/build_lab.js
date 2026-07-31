@@ -1,11 +1,41 @@
+/* THIS BUILD WAS UNRUNNABLE, and that is why the shipped data froze.
+ *
+ * It read /tmp/champ_dex.json, /tmp/champ_megas.json and /tmp/champ_moves.json, and wrote to
+ * /sessions/kind-fervent-sagan/mnt/outputs/. All four paths are gone: three temp files that were
+ * never version controlled, and an output directory belonging to a sandbox session that no longer
+ * exists. So the species table beneath champions-damage-lab.html -> engine/champ-model.js -> both
+ * shipped userscripts could not be regenerated from anything, by anyone. Nobody noticed it ageing
+ * because nobody could re-run it to find out.
+ *
+ * Measured 2026-07-31: the shipped plugin carried 289 species and 57 mega formes against ABRA's 308
+ * and 76, and NO ABILITIES AT ALL -- the old loader built {name, t, bs} and nothing else, so no
+ * ability ever entered the pipeline. In a format where megas are 26.0% of usage and the weather
+ * cores ARE megas, every mega in the plugin was a stat block with no identity.
+ *
+ * Now: one version-controlled input, refreshed by build/refresh_dex_from_abra.js from ABRA's
+ * validated dex, with provenance stamped inside it. Re-runnable by anyone with a clone. */
 const fs=require('fs');
-const dex=require('/tmp/champ_dex.json');
-const megas=require('/tmp/champ_megas.json');
-const moves=require('/tmp/champ_moves.json');
+const path=require('path');
+const ROOT=path.join(__dirname,'..');
+const DEXFILE=path.join(ROOT,'data','champ-dex.json');
+if(!fs.existsSync(DEXFILE)){
+  console.error(`missing ${path.relative(ROOT,DEXFILE)} — run: node build/refresh_dex_from_abra.js`);
+  process.exit(2);
+}
+const SRC=JSON.parse(fs.readFileSync(DEXFILE,'utf8'));
+const moves=SRC.moves||{};
 const MONS={};
-function title(sid){ return sid.split('-').map(s=>s.charAt(0).toUpperCase()+s.slice(1)).join('-'); }
-for(const [sid,d] of Object.entries(dex)) MONS[sid]={name:title(sid),t:d.t,bs:d.bs};
-for(const [sid,d] of Object.entries(megas)) MONS[sid]={name:title(sid),t:d.t,bs:d.bs,mega:true};
+for(const [sid,d] of Object.entries(SRC.species||{})){
+  /* ABILITY AND MOVES CARRIED THROUGH. The old builder dropped both; a mega with no ability is
+   * Charizard-Mega-Y with no Drought, which is not the Pokemon anyone is calcing. */
+  const row={name:d.name,t:d.t,bs:d.bs};
+  if(d.ab) row.ab=d.ab;
+  if(d.mv) row.mv=d.mv;
+  if(d.item) row.item=d.item;
+  if(d.wt) row.wt=d.wt;
+  if(d.mega) row.mega=true;
+  MONS[sid]=row;
+}
 const TYPES=["Normal","Fire","Water","Electric","Grass","Ice","Fighting","Poison","Ground","Flying","Psychic","Bug","Rock","Ghost","Dragon","Dark","Steel","Fairy"];
 const rows={
 Normal:{Rock:.5,Ghost:0,Steel:.5},
@@ -118,5 +148,12 @@ function draw(){
  document.querySelector('#out tbody').innerHTML=h;}
 function setSort(k){if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=(k==='name'||k==='t')?1:-1;}draw();}
 </script></div></body></html>`;
-fs.writeFileSync('/sessions/kind-fervent-sagan/mnt/outputs/champions-damage-lab.html',html);
-console.log('built champions-damage-lab.html',(html.length/1024).toFixed(0)+'KB');
+/* WRITTEN WHERE IT IS ACTUALLY READ. The old path pointed into a sandbox session's output mount,
+ * so even with its inputs present this wrote to nowhere. engine/champ-model.js reads this file from
+ * engine/, and that is the only place it can usefully land. */
+const OUTFILE=path.join(ROOT,'engine','champions-damage-lab.html');
+fs.writeFileSync(OUTFILE,html);
+console.log('built',path.relative(ROOT,OUTFILE),(html.length/1024).toFixed(0)+'KB');
+console.log(`  ${Object.keys(MONS).length} species (${Object.values(MONS).filter(m=>m.mega).length} mega), `
+  +`${Object.values(MONS).filter(m=>m.ab).length} with an ability, ${Object.keys(moves).length} moves`);
+console.log(`  dex source: ${SRC.source||'?'} @ ${(SRC.source_commit||'?').slice(0,12)} (generated ${SRC.generated||'?'})`);

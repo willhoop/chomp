@@ -2,10 +2,20 @@
 # Assemble chomp-bring4.user.js: real damage-calc engine + Showdown bridge
 # that reads your real saved sets and infers the opponent's.
 import re, io
+import os as _os
+# PATHS WERE HARDCODED INTO A SANDBOX THAT NO LONGER EXISTS.
+# Every path in this file pointed at /sessions/kind-fervent-sagan/mnt/... — a session mount from the
+# machine this was originally written on. The build has therefore been unrunnable by anyone,
+# including its author, which is why the shipped plugin froze on 2026-07-23 carrying 289 species and
+# no abilities at all while the dex moved on to 308. Resolved relative to this file instead, so a
+# clone builds.
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+def _p(*parts): return _os.path.join(_ROOT, *parts)
 
-OUT='/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/app/plugin/chomp-bring4.user.js'
-lab=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/engine/champions-damage-lab.html',encoding='utf8').read()
-model=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/engine/champ-model.js',encoding='utf8').read()
+
+OUT=_p('app','plugin','chomp-bring4.user.js')
+lab=open(_p('engine','champions-damage-lab.html'),encoding='utf8').read()
+model=open(_p('engine','champ-model.js'),encoding='utf8').read()
 
 def grab(name):
     m=re.search(r'(?:const |,|\s)'+name+r'=\{', lab)
@@ -20,10 +30,17 @@ def grab(name):
     return lab[start:i]
 
 MONS=grab('MONS'); MOVES=grab('MOVES'); C=grab('C')
-LEGAL=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/data/champions-legal-moves.json',encoding='utf8').read()
+LEGAL=open(_p('data','champions-legal-moves.json'),encoding='utf8').read()
 import os
-_metap='/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/ABRA/data/meta-usage.json'
-META=open(_metap,encoding='utf8').read() if os.path.exists(_metap) else '{"threats":[]}'
+# The threat list is ABRA's, and ABRA is a SIBLING repo rather than a dependency — CHOMP must still
+# build without it, which the fallback preserves. But the old absolute path could never resolve on
+# any machine, so this has been silently shipping '{"threats":[]}' ever since the sandbox went away:
+# the plugin's threat awareness has been EMPTY, not merely stale. Now it resolves, and says so when
+# it cannot.
+_metap = _os.path.join(_ROOT, '..', 'ABRA', 'data', 'meta-usage.json')
+META = open(_metap, encoding='utf8').read() if os.path.exists(_metap) else '{"threats":[]}'
+print('  threat list: ' + ('ABRA meta-usage.json' if os.path.exists(_metap)
+                           else 'NOT FOUND — building with an EMPTY threat list'))
 
 # engine = champ-model.js from `const byName` up to (excluding) module.exports, minus the fs loader
 i0=model.index('const FORMAT')   # was 'const byName', which dropped FORMAT/isBannedItem/canLearn

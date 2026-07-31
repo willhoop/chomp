@@ -94,7 +94,11 @@ const NAT = { // nature -> [boostStat, dropStat]
   bold:['def','atk'], calm:['spd','atk'], careful:['spd','spa'], impish:['def','spa'],
   relaxed:['def','spe'], sassy:['spd','spe'], quiet:['spa','spe'], brave:['atk','spe'],
   naive:['spe','spd'], hasty:['spe','def'], lonely:['atk','def'], mild:['spa','def'],
-  rash:['spa','spd'], gentle:['spd','def'], hardy:[], docile:[], serious:[], bashful:[], quirky:[]
+  rash:['spa','spd'], gentle:['spd','def'],
+  // naughty and lax were MISSING: both silently computed as neutral, understating Attack on a
+  // Naughty set and Defence on a Lax one. All 25 natures are now present.
+  naughty:['atk','spd'], lax:['def','spd'],
+  hardy:[], docile:[], serious:[], bashful:[], quirky:[]
 };
 const natMul = (nat, stat) => { const n=NAT[(nat||'').toLowerCase()]||[]; if(n[0]===stat)return 1.1; if(n[1]===stat)return 0.9; return 1; };
 
@@ -227,6 +231,70 @@ function buildMon(set){
   };
   return { key:set.key, name:(mf&&mf.name)||mon.name, types, st, item, ability:ab, moves:set.moves.slice(),
            sets:set, isMega, holdsStone, megaForme:(mf&&mf.forme)||null, setsWeather: WEATHER_SETTER[ab]||null };
+}
+
+/* ---- SECONDARY EFFECTS -------------------------------------------------------------------
+ * One rulebook, generated from Showdown's moves.json by build/build_move_effects.js. Every engine
+ * that needs burn / paralysis / freeze / poison / confusion / flinch reads THIS, so the rules
+ * cannot drift apart the way the mega-ability tables did.
+ *
+ * The two rules that are easy to get wrong, stated once:
+ *   FLINCH  only lands if the user moves BEFORE the target, and expires at the end of that turn.
+ *   STATUS  cannot be applied to a Pokemon that already has one, and type immunities hold
+ *           (Fire cannot burn, Electric cannot be paralysed, Ice cannot freeze, Poison/Steel
+ *           cannot be poisoned). Note these are the TARGET's types. */
+let MOVE_FX = null;
+function moveEffects(){
+  if(MOVE_FX) return MOVE_FX;
+  MOVE_FX = {};
+  try{ MOVE_FX = (JSON.parse(fs.readFileSync(__dirname + '/../data/move-effects.json','utf8')).moves)||{}; }
+  catch(e){ /* absent -> no secondary effects, rather than wrong ones */ }
+  return MOVE_FX;
+}
+const STATUS_IMMUNE_TYPE = { brn:'Fire', par:'Electric', frz:'Ice', psn:'Poison', tox:'Poison' };
+const STATUS_IMMUNE_ABIL = { brn:['water veil','comatose'], par:['limber','comatose'],
+  frz:['magma armor','comatose'], psn:['immunity','comatose'], tox:['immunity','comatose'],
+  slp:['insomnia','vital spirit','comatose','sweet veil'] };
+
+/* Can this status actually land on this target? */
+function statusLands(status, target){
+  if(!status || !target) return false;
+  if(target.status) return false;                                   // already has one
+  const t = STATUS_IMMUNE_TYPE[status];
+  if(t && target.types && target.types.includes(t)) return false;   // Fire cannot burn, etc.
+  if(status==='psn' && target.types && target.types.includes('Steel')) return false;
+  const ab = (STATUS_IMMUNE_ABIL[status]||[]);
+  if(ab.includes((target.ability||'').toLowerCase())) return false;
+  return true;
+}
+
+/* The chance each secondary effect actually resolves, given who moved first.
+ * Returns [{kind:'status'|'volatile'|'boost', what, p}], p already accounting for accuracy,
+ * immunity and - for flinch - whether the user moved first at all. */
+function secondaryChances(mv, attacker, target, opts){
+  const o = opts || {};
+  const rec = moveEffects()[(mv && (mv.id || (mv.n||'').toLowerCase().replace(/[^a-z0-9]/g,'')))||''];
+  if(!rec || !rec.secondary) return [];
+  const acc = rec.accuracy === true ? 1 : (rec.accuracy||100)/100;
+  const out = [];
+  for(const s of rec.secondary){
+    const base = (s.chance==null?100:s.chance)/100 * acc;
+    if(s.status){
+      out.push({ kind:'status', what:s.status, p: statusLands(s.status, target) ? base : 0 });
+    } else if(s.volatile === 'flinch'){
+      // a flinch does nothing unless the user is faster; expires at end of turn
+      const first = o.userMovesFirst === undefined ? null : !!o.userMovesFirst;
+      out.push({ kind:'volatile', what:'flinch', p: first === false ? 0 : base,
+                 requiresMovingFirst:true, unknownOrder: first === null });
+    } else if(s.volatile){
+      out.push({ kind:'volatile', what:s.volatile, p: base });
+    } else if(s.targetBoosts){
+      out.push({ kind:'boost', what:s.targetBoosts, p: base, on:'target' });
+    } else if(s.selfBoosts){
+      out.push({ kind:'boost', what:s.selfBoosts, p: base, on:'self' });
+    }
+  }
+  return out;
 }
 
 // ---- speed with modifiers ----
@@ -434,4 +502,4 @@ function bring4(mine6, foe6, opts={}){
           weather:w.weather?(w.weather+(w.contested?' (contested)':' ('+w.owner+')')):'none', subs:subs.slice(0,3).map(s=>({t:s.sub.map(m=>m.name),score:s.r.score}))};
 }
 
-module.exports = { MONS, MOVES, C, FORMAT, parsePaste, buildMon, teamVs, bring4, moveDamage, bestDamage, resolveWeather, findMon, mvByName, canLearn, legalityLoaded, BAD_AUTO };
+module.exports = { MONS, MOVES, C, FORMAT, moveEffects, secondaryChances, statusLands, parsePaste, buildMon, teamVs, bring4, moveDamage, bestDamage, resolveWeather, findMon, mvByName, canLearn, legalityLoaded, BAD_AUTO };

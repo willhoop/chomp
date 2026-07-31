@@ -2,8 +2,18 @@
 # Build olme-replay-app.html: a standalone page that auto-pulls your Showdown
 # replays and runs each through OLME (embedded damage-calc engine).
 import re
-lab=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/engine/champions-damage-lab.html',encoding='utf8').read()
-model=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/engine/champ-model.js',encoding='utf8').read()
+import os as _os
+# PATHS WERE HARDCODED INTO A SANDBOX THAT NO LONGER EXISTS.
+# Every path in this file pointed at /sessions/kind-fervent-sagan/mnt/... — a session mount from the
+# machine this was originally written on. The build has therefore been unrunnable by anyone,
+# including its author, which is why the shipped plugin froze on 2026-07-23 carrying 289 species and
+# no abilities at all while the dex moved on to 308. Resolved relative to this file instead, so a
+# clone builds.
+_ROOT = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
+def _p(*parts): return _os.path.join(_ROOT, *parts)
+
+lab=open(_p('engine','champions-damage-lab.html'),encoding='utf8').read()
+model=open(_p('engine','champ-model.js'),encoding='utf8').read()
 def grab(name):
     m=re.search(r'(?:const |,|\s)'+name+r'=\{',lab); i=m.end()-1; d=0; st=i
     while i<len(lab):
@@ -15,7 +25,7 @@ def grab(name):
         i+=1
     return lab[st:i]
 MONS=grab('MONS'); MOVES=grab('MOVES'); C=grab('C')
-LEGAL=open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/data/champions-legal-moves.json',encoding='utf8').read()
+LEGAL=open(_p('data','champions-legal-moves.json'),encoding='utf8').read()
 engine=model[model.index('const byName'):model.index('module.exports')].strip()
 
 APP=r'''
@@ -205,5 +215,5 @@ const MONS={MONS},MOVES={MOVES},C={C};
 {APP}
 </script></body></html>'''
 
-open('/sessions/kind-fervent-sagan/mnt/Projects/Pokemon/CHOMP/app/chomp-replay-app.html','w',encoding='utf8').write(HTML)
+open(_p('app','chomp-replay-app.html'),'w',encoding='utf8').write(HTML)
 print('wrote chomp-replay-app.html', len(HTML),'bytes')
