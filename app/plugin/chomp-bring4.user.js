@@ -665,11 +665,70 @@ function readField(){
     return f;
   }catch(e){return f;}
 }
+/* THE DECLARED SET NOW OUTRANKS THE MODAL GUESS, but never outranks what was OBSERVED.
+ * Order: explicit override > live battle state > the declared sheet > the dataset's modal value.
+ * Live wins over the sheet because an item can be knocked off and an ability can be replaced
+ * mid-battle -- observed beats declared, the same rule ABRA's ingest uses. The modal value stays as
+ * the last resort for closed-sheet play, where there is no sheet to read. */
 function mkMon(species, itemOverride){ const m=ORB.mons[idn(species)]; if(!m) return null;
   const L=liveMon(idn(species));
+  const D=DECLARED[idn(species)]||null;
   const st=(L.stats&&L.stats.at)?{at:L.stats.at,df:L.stats.df,sa:L.stats.sa,sd:L.stats.sd,hp:L.stats.hp||m.st.hp}:{...m.st};
   if(L.stats&&L.stats.hp)st.hp=L.stats.hp;
-  return {name:idn(species), t:m.t.slice(), st, item:idn(itemOverride||L.item||m.item||''), ab:idn(L.ability||m.ab||''), status:L.status||null, boosts:L.boosts||{}, helpingHand:!!L.helpingHand, mv:m.mv.slice()}; }
+  return {name:idn(species), t:m.t.slice(), st,
+    item:idn(itemOverride||L.item||(D&&D.item)||m.item||''),
+    ab:idn(L.ability||(D&&D.ab)||m.ab||''),
+    status:L.status||null, boosts:L.boosts||{}, helpingHand:!!L.helpingHand,
+    /* THE BIGGEST OF THE FOUR. m.mv is the ladder's most common four for this species; D.mv is the
+     * four this opponent actually brought. Every KO number downstream is computed from this list. */
+    mv:(D&&D.mv&&D.mv.length)?D.mv.slice():m.mv.slice(),
+    declared:!!D }; }
+
+/* ---- THE DECLARED SETS, which this format hands us and we were throwing away -----------------
+ *
+ * Champions Reg M-B Bo3 runs Force Open Team Sheets, so the server sends |showteam| at battle start
+ * declaring the FULL set of all six for BOTH players -- item, ability, all four moves, nature,
+ * level. The hidden-information problem is simply removed.
+ *
+ * We read |poke| for the species and stopped there, so mkMon fell back to ORB.mons' MODAL values:
+ * the most common item, ability and moveset for that species across the ladder. CHOMP was guessing
+ * sets that were printed on the screen. That is the likeliest reason its bring advice measures at
+ * held-out log-loss 0.6923 against a coin's 0.6931, and LOSES to the naive "bring your most-brought
+ * four" prior at 0.6919 -- coverage computed against an averaged opponent is coverage against a
+ * Pokemon nobody brought.
+ *
+ * Format (one entry per Pokemon, ']' separated), taken from ABRA's ingest rather than re-derived:
+ *   Gengar||Gengarite|CursedBody|ShadowBall,PerishSong,...|Timid||F|||50
+ *   species|nickname|item|ability|moves|nature|evs|gender|...|level
+ *
+ * MIRROR MATCHES ARE REFUSED RATHER THAN GUESSED. This map is keyed by species, because mkMon is
+ * called from a dozen places without a side, and in a mirror the same species carries two different
+ * declared sets. A conflicting species is DROPPED from the map and falls back to the modal value --
+ * worse, but not confidently wrong. */
+const DECLARED = {};
+let DECLARED_N = 0, DECLARED_CONFLICTS = 0;
+function readSheets(stepQueue){
+  try{
+    const seen = {};
+    for(const l0 of (stepQueue||[])){
+      const m = (''+l0).match(/^\|showteam\|(p[12])\|(.*)$/);
+      if(!m) continue;
+      for(const entry of m[2].split(']')){
+        const f = entry.split('|');
+        const sp = idn(f[0]||''); if(!sp) continue;
+        const set = { item: idn(f[2]||''), ab: idn(f[3]||''),
+                      mv: (f[4]||'').split(',').map(idn).filter(Boolean),
+                      nature: (f[5]||'')||null };
+        const key = JSON.stringify([set.item, set.ab, set.mv.slice().sort()]);
+        if(seen[sp] && seen[sp] !== key){ delete DECLARED[sp]; DECLARED_CONFLICTS++; continue; }
+        if(seen[sp]) continue;
+        seen[sp] = key; DECLARED[sp] = set;
+      }
+    }
+    DECLARED_N = Object.keys(DECLARED).length;
+  }catch(e){ /* a malformed sheet must not take the panel down */ }
+  return DECLARED_N;
+}
 
 // ---- read BOTH teams from the live Showdown battle (open team sheets in Champions) ----
 function readTeams(){
@@ -678,6 +737,9 @@ function readTeams(){
     if(b){
       // PRIMARY: |poke| lines in the battle log/stepQueue (present from team preview on)
       const q=b.stepQueue||b.log||[]; const poke={p1:[],p2:[]}, names={p1:'',p2:''};
+      /* Read the declared sheets off the SAME queue, before anything is built from it. Cheap and
+       * idempotent: |showteam| appears once per side at battle start and re-parsing is a no-op. */
+      readSheets(q);
       for(const l0 of q){ const line=''+l0; let m;
         if(m=line.match(/^\|player\|(p[12])\|([^|]*)/)){ if(m[2])names[m[1]]=m[2]; }
         else if(m=line.match(/^\|poke\|(p[12])\|([^,|]+)/)){ poke[m[1]].push(idn(m[2])); } }
